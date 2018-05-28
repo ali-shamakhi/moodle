@@ -1,0 +1,124 @@
+{
+    "swagger": "2.0",
+    "info": {
+        "title": "Example of using references in swagger-php",
+        "version": "1.0.0"
+    },
+    "paths": {
+        "/api/path": {
+            "post": {
+                "summary": "Post to URL",
+                "parameters": [
+                    {
+                        "name": "body",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "properties": {
+                                "name": {
+                                    "type": "string",
+                                    "maximum": 64
+                                },
+                                "description": {
+                                    "type": "string"
+                                }
+                            }
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Example extended response",
+                        "schema": {
+                            "properties": {
+                                "status": {
+                                    "description": "The status of a product",
+                                    "type": "string",
+                                    "default": "available",
+                                    "enum": [
+                                        "available",
+                                        "discontinued"
+                                    ]
+                                },
+                                "success": {
+                                    "type": "boolean"
+                                },
+                                "data": {
+                                    "$ref": "#/definitions/Product"
+                                },
+                                "errors": {
+                                    "type": "object"
+                                },
+                                "token": {
+                                    "type": "string"
+                                }
+                            }
+                        }
+                    }
+                },
+                "security": [
+                    {
+                        "Bearer": []
+                    }
+                ]
+            }
+        }
+    },
+    "definitions": {
+        "Product": {
+            "properties": {
+                "id": {
+                    "description": "",
+                    "type": "integer",
+                    "format": "int64"
+                },
+                "status": {
+                    "description": "",
+                    "type": "boolean",
+                    "format": "boolean"
+                }
+            }
+        },
+        "ExampleDefinition": {
+            "properties": {
+                "status": {
+                    "description": "The status of a product",
+                    "type": "string",
+                    "default": "available",
+                    "enum": [
+                        "available",
+                        "discontinued"
+                    ]
+                }
+            }
+        }
+    },
+    "responses": {
+        "Json": {
+            "description": "the basic response",
+            "schema": {
+                "properties": {
+                    "status": {
+                        "description": "The status of a product",
+                        "type": "string",
+                        "default": "available",
+                        "enum": [
+                            "available",
+                            "discontinued"
+                        ]
+                    },
+                    "success": {
+                        "type": "boolean"
+                    },
+                    "data": {},
+                    "errors": {
+                        "type": "object"
+                    },
+                    "token": {
+                        "type": "string"
+                    }
+                }
+            }
+        }
+    }
+}
