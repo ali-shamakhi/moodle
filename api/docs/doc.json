@@ -1,0 +1,59 @@
+{
+    "swagger": "2.0",
+    "info": {
+        "title": "Moodle API",
+        "version": "1.0.0"
+    },
+    "host": "localhost/moodle",
+    "basePath": "/api/v1",
+    "schemes": [
+        "http"
+    ],
+    "paths": {
+        "/test.php": {
+            "get": {
+                "summary": "list products",
+                "produces": [
+                    "application/json"
+                ],
+                "parameters": [],
+                "responses": {
+                    "200": {
+                        "description": "A list with products.",
+                        "schema": {
+                            "type": "array",
+                            "items": {
+                                "$ref": "#/definitions/Product"
+                            }
+                        }
+                    },
+                    "default": {
+                        "description": "an \"unexpected\" error"
+                    }
+                }
+            }
+        }
+    },
+    "definitions": {
+        "Product": {
+            "properties": {
+                "id": {
+                    "description": "",
+                    "type": "integer"
+                },
+                "name": {
+                    "description": "",
+                    "type": "string"
+                },
+                "description": {
+                    "description": "",
+                    "type": "string"
+                },
+                "price": {
+                    "description": "",
+                    "type": "integer"
+                }
+            }
+        }
+    }
+}
