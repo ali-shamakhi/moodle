@@ -1,10 +1,21 @@
 <?php
 
-include(dirname(__FILE__) . DIRECTORY_SEPARATOR . 'Product.php');
+if (!file_exists('../../config.php')) {
+    header('Location: ../../install.php');
+    die;
+}
 
-$env = "debug";
+require_once('../../config.php');
+require_once($CFG->dirroot .'/course/lib.php');
+require_once($CFG->libdir .'/filelib.php');
 
-define("API_HOST", ($env === "production") ? "example.com" : "localhost");
+foreach (glob("models/*.php") as $class_name) {
+    include($class_name);
+}
+
+// required headers
+header("Access-Control-Allow-Origin: *");
+header("Content-Type: application/json; charset=UTF-8");
 
 /**
  * @SWG\Swagger(
@@ -13,7 +24,7 @@ define("API_HOST", ($env === "production") ? "example.com" : "localhost");
  *       version="1.0.0"
  *    ),
  *     schemes={"http"},
- *     host="localhost/moodle",
+ *     host=API_HOST,
  *     basePath="/api/v1"
  * )
  * @SWG\Get(
@@ -37,21 +48,6 @@ define("API_HOST", ($env === "production") ? "example.com" : "localhost");
  *   )
  * )
  */
-
-// moodle environment
-if (!file_exists('../../config.php')) {
-    header('Location: install.php');
-    die;
-}
-
-require_once('../../config.php');
-require_once($CFG->dirroot .'/course/lib.php');
-require_once($CFG->libdir .'/filelib.php');
-
-// required headers
-header("Access-Control-Allow-Origin: *");
-header("Content-Type: application/json; charset=UTF-8");
-
 
 // products array
 $products_arr=array();
