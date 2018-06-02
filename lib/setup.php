@@ -1072,8 +1072,8 @@ if (defined('BEHAT_SITE_RUNNING') && !defined('BEHAT_TEST')) {
 
 // this is a funny trick to make Eclipse believe that $OUTPUT and other globals
 // contains an instance of core_renderer, etc. which in turn fixes autocompletion ;-)
-if (false) {
-    $DB = new moodle_database();
-    $OUTPUT = new core_renderer(null, null);
-    $PAGE = new moodle_page();
-}
+//if (false) {
+//    $DB = new moodle_database();
+//    $OUTPUT = new core_renderer(null, null);
+//    $PAGE = new moodle_page();
+//}
