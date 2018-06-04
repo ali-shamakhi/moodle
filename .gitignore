@@ -41,3 +41,5 @@ atlassian-ide-plugin.xml
 /theme/academi/
 /theme/moove/
 /theme/aardvark/
+
+api/api_bootstrap.php
