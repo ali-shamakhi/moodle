@@ -10,6 +10,26 @@
         "http"
     ],
     "paths": {
+        "/courses.php": {
+            "get": {
+                "summary": "Get All courses of the user",
+                "produces": [
+                    "application/json"
+                ],
+                "parameters": [],
+                "responses": {
+                    "200": {
+                        "description": "List of the user's courses",
+                        "schema": {
+                            "$ref": "#/definitions/CoursesResponse"
+                        }
+                    },
+                    "default": {
+                        "description": "Unexpected Error"
+                    }
+                }
+            }
+        },
         "/test.php": {
             "get": {
                 "summary": "list products",
@@ -35,6 +55,98 @@
         }
     },
     "definitions": {
+        "CourseAttendResponse": {
+            "properties": {
+                "result": {
+                    "description": "1 is successful",
+                    "type": "integer",
+                    "example": 1
+                },
+                "message": {
+                    "description": "[Optional field] Error message (if there is error)",
+                    "type": "string",
+                    "example": "Unknown Error"
+                }
+            }
+        },
+        "CourseDetailsResponse": {
+            "properties": {
+                "result": {
+                    "description": "1 is successful",
+                    "type": "integer",
+                    "example": 1
+                },
+                "message": {
+                    "description": "[Optional field] Error message (if there is error)",
+                    "type": "string",
+                    "example": "Unknown Error"
+                },
+                "course_id": {
+                    "description": "",
+                    "type": "integer",
+                    "example": 2
+                },
+                "session_start_timestamp": {
+                    "description": "",
+                    "type": "integer",
+                    "example": 1528095600
+                },
+                "session_end_timestamp": {
+                    "description": "",
+                    "type": "integer",
+                    "example": 1528101000
+                },
+                "past_attendance_count": {
+                    "description": "Number of past taken attendances",
+                    "type": "integer",
+                    "example": 10
+                },
+                "teachers_full_names": {
+                    "description": "",
+                    "type": "array",
+                    "items": {
+                        "description": "Teacher's Full Name",
+                        "type": "string",
+                        "example": "Ali Shamakhi"
+                    }
+                },
+                "students_details": {
+                    "description": "",
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/StudentDetails"
+                    }
+                }
+            }
+        },
+        "CoursesResponse": {
+            "properties": {
+                "result": {
+                    "description": "1 is successful",
+                    "type": "integer",
+                    "example": 1
+                },
+                "message": {
+                    "description": "[Optional field] Error message (if there is error)",
+                    "type": "string",
+                    "example": "Unknown Error"
+                },
+                "teachers_courses": {
+                    "description": "",
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/TeacherCourse"
+                    }
+                },
+                "student_courses": {
+                    "description": "",
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/StudentCourse"
+                    }
+                }
+            }
+        },
         "Product": {
             "properties": {
                 "id": {
@@ -52,6 +164,72 @@
                 "price": {
                     "description": "",
                     "type": "integer"
+                }
+            }
+        },
+        "StudentCourse": {
+            "properties": {
+                "course_id": {
+                    "description": "",
+                    "type": "integer",
+                    "example": 1
+                },
+                "course_name": {
+                    "description": "Course's Full Name",
+                    "type": "string",
+                    "example": "Computer Engineering 3962"
+                },
+                "absence_count": {
+                    "description": "",
+                    "type": "integer",
+                    "example": 3
+                },
+                "teachers_full_names": {
+                    "description": "",
+                    "type": "array",
+                    "items": {
+                        "description": "Teacher's Full Name",
+                        "type": "string",
+                        "example": "Ali Shamakhi"
+                    }
+                }
+            }
+        },
+        "StudentDetails": {
+            "properties": {
+                "id": {
+                    "description": "",
+                    "type": "integer",
+                    "example": 7
+                },
+                "full_name": {
+                    "description": "Student's Full Name",
+                    "type": "string",
+                    "example": "Masoud Moharrami"
+                },
+                "pic_url": {
+                    "description": "URL of the Student's Profile Picture",
+                    "type": "string",
+                    "example": "{DOMAIN}/user/pix.php/7/f1.jpg"
+                },
+                "absence_count": {
+                    "description": "",
+                    "type": "integer",
+                    "example": 3
+                }
+            }
+        },
+        "TeacherCourse": {
+            "properties": {
+                "course_id": {
+                    "description": "",
+                    "type": "integer",
+                    "example": 2
+                },
+                "course_name": {
+                    "description": "",
+                    "type": "string",
+                    "example": "Computer Science 3962"
                 }
             }
         }

@@ -19,43 +19,28 @@ header("Content-Type: application/json; charset=UTF-8");
 
 /**
  * @SWG\Get(
- *   path="/test.php",
- *   summary="list products",
+ *   path="/courses.php",
+ *   summary="Get All courses of the user",
  *   produces={"application/json"},
  *   parameters={},
  *   @SWG\Response(
  *      response=200,
- *      description="A list with products.",
+ *      description="List of the user's courses",
  *      @SWG\Schema(
- *          type="array",
- *          @SWG\Items(
- *              ref="#/definitions/Product"
- *          )
+ *          ref="#/definitions/CoursesResponse"
  *      )
  *   ),
  *   @SWG\Response(
  *      response="default",
- *      description="an ""unexpected"" error"
+ *      description="Unexpected Error"
  *   )
  * )
  */
 
-// products array
-$products_arr=array();
-$products_arr["records"]=array();
+$courses = new CoursesResponse;
 
-$i = 1;
-while ($i <= 5) {
+// TODO: populate $courses
 
-    $product_item = new Product();
-    $product_item->id = $i++;
-    $product_item->name = 'test';
-    $product_item->description = html_entity_decode('توضیحات');
-    $product_item->price = 1000;
-
-    array_push($products_arr["records"], $product_item);
-}
-
-echo json_encode($products_arr);
+echo json_encode($courses);
 
 ?>
