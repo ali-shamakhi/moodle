@@ -78,4 +78,15 @@ class CourseDetailsResponse
      */
     public $students_details;
 
+    public function __construct($result, $message, $course_id, $session_start_timestamp, $session_end_timestamp, $past_attendance_count, $teachers_full_name, $students_details)
+    {
+        $this->result = $result;
+        $this->message = $message;
+        $this->course_id = $course_id;
+        $this->session_start_timestamp = $session_start_timestamp;
+        $this->session_end_timestamp = $session_end_timestamp;
+        $this->past_attendance_count = $past_attendance_count;
+        $this->teachers_full_names = $teachers_full_name;
+        $this->students_details = $students_details;
+    }
 }

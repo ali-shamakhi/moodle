@@ -20,4 +20,10 @@ class TeacherCourse
      * )
      */
     public $course_name;
+
+    public function __construct($course_id, $course_name)
+    {
+        $this->course_id = $course_id;
+        $this->course_name = $course_name;
+    }
 }

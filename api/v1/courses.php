@@ -37,9 +37,11 @@ header("Content-Type: application/json; charset=UTF-8");
  * )
  */
 
-$courses = new CoursesResponse;
-
-// TODO: populate $courses
+// TODO: implement
+// mock data
+$courses = new CoursesResponse(1, null,
+    array(new TeacherCourse(2, "Computer Science 3962")),
+    array(new StudentCourse(1, "Computer Engineering 3962", 3, array("Ali Shamakhi"))));
 
 echo json_encode($courses);
 

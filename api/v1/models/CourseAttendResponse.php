@@ -22,4 +22,10 @@ class CourseAttendResponse
      * )
      */
     public $message;
+
+    public function __construct($result, $message)
+    {
+        $this->result = $result;
+        $this->message = $message;
+    }
 }

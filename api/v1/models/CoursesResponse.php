@@ -42,4 +42,12 @@ class CoursesResponse
      * )
      */
     public $student_courses;
+
+    public function __construct($result, $message, $teachers_courses, $student_courses)
+    {
+        $this->result = $result;
+        $this->message = $message;
+        $this->teachers_courses = $teachers_courses;
+        $this->student_courses = $student_courses;
+    }
 }

@@ -38,4 +38,12 @@ class StudentDetails
      * )
      */
     public $absence_count;
+
+    public function __construct($id, $full_name, $pic_url, $absence_count)
+    {
+        $this->id = $id;
+        $this->full_name = $full_name;
+        $this->pic_url = $pic_url;
+        $this->absence_count = $absence_count;
+    }
 }

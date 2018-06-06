@@ -1,7 +1,7 @@
 {
     "swagger": "2.0",
     "info": {
-        "title": "Moodle API",
+        "title": "SLMS API",
         "version": "1.0.0"
     },
     "host": "localhost/moodle",
@@ -10,6 +10,75 @@
         "http"
     ],
     "paths": {
+        "/course/attend.php": {
+            "post": {
+                "summary": "Post attendance details",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "parameters": [
+                    {
+                        "name": "params",
+                        "in": "query",
+                        "description": "The course's ID and the list of present students' IDs",
+                        "schema": {
+                            "$ref": "#/definitions/CourseAttendParameter"
+                        },
+                        "type": "string",
+                        "format": "application/json",
+                        "default": "\r\n{\r\n   \"course_id\":2,\r\n   \"attend_students\":[\r\n      7,\r\n      21\r\n   ]\r\n}\r\n"
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Attendance details",
+                        "schema": {
+                            "$ref": "#/definitions/CourseAttendResponse"
+                        }
+                    },
+                    "default": {
+                        "description": "Unexpected Error"
+                    }
+                }
+            }
+        },
+        "/course/details.php": {
+            "get": {
+                "summary": "Get details of the course",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "parameters": [
+                    {
+                        "name": "params",
+                        "in": "query",
+                        "schema": {
+                            "$ref": "#/definitions/CourseIdParameter"
+                        },
+                        "type": "string",
+                        "format": "application/json",
+                        "default": "\r\n{\r\n   \"course_id\":2\r\n}\r\n"
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Details of the course",
+                        "schema": {
+                            "$ref": "#/definitions/CourseDetailsResponse"
+                        }
+                    },
+                    "default": {
+                        "description": "Unexpected Error"
+                    }
+                }
+            }
+        },
         "/courses.php": {
             "get": {
                 "summary": "Get All courses of the user",
@@ -29,32 +98,27 @@
                     }
                 }
             }
-        },
-        "/test.php": {
-            "get": {
-                "summary": "list products",
-                "produces": [
-                    "application/json"
-                ],
-                "parameters": [],
-                "responses": {
-                    "200": {
-                        "description": "A list with products.",
-                        "schema": {
-                            "type": "array",
-                            "items": {
-                                "$ref": "#/definitions/Product"
-                            }
-                        }
-                    },
-                    "default": {
-                        "description": "an \"unexpected\" error"
-                    }
-                }
-            }
         }
     },
     "definitions": {
+        "CourseAttendParameter": {
+            "properties": {
+                "course_id": {
+                    "description": "",
+                    "type": "integer",
+                    "example": 2
+                },
+                "attend_students": {
+                    "description": "",
+                    "type": "array",
+                    "items": {
+                        "description": "Student ID",
+                        "type": "int",
+                        "example": "7"
+                    }
+                }
+            }
+        },
         "CourseAttendResponse": {
             "properties": {
                 "result": {
@@ -119,6 +183,15 @@
                 }
             }
         },
+        "CourseIdParameter": {
+            "properties": {
+                "course_id": {
+                    "description": "",
+                    "type": "integer",
+                    "example": 2
+                }
+            }
+        },
         "CoursesResponse": {
             "properties": {
                 "result": {
@@ -144,26 +217,6 @@
                     "items": {
                         "$ref": "#/definitions/StudentCourse"
                     }
-                }
-            }
-        },
-        "Product": {
-            "properties": {
-                "id": {
-                    "description": "",
-                    "type": "integer"
-                },
-                "name": {
-                    "description": "",
-                    "type": "string"
-                },
-                "description": {
-                    "description": "",
-                    "type": "string"
-                },
-                "price": {
-                    "description": "",
-                    "type": "integer"
                 }
             }
         },

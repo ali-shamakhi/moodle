@@ -3,7 +3,7 @@
 /**
  * @SWG\Swagger(
  *    @SWG\Info(
- *       title="Moodle API",
+ *       title="SLMS API",
  *       version="1.0.0"
  *    ),
  *     schemes={"http"},
