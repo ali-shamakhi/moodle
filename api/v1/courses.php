@@ -22,6 +22,7 @@ header("Content-Type: application/json; charset=UTF-8");
  *   path="/courses.php",
  *   summary="Get All courses of the user",
  *   produces={"application/json"},
+ *   tags={"Attendance"},
  *   parameters={},
  *   @SWG\Response(
  *      response=200,

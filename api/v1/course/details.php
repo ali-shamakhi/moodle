@@ -23,6 +23,7 @@ header("Content-Type: application/json; charset=UTF-8");
  *   summary="Get details of the course",
  *   consumes={"application/json"},
  *   produces={"application/json"},
+ *   tags={"Attendance"},
  *   @SWG\Parameter(
  *      name="params",
  *      in="query",
