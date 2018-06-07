@@ -1,33 +1,37 @@
 <html>
 
 <head>
-  <title>
-    <%= title %>
-  </title>
-  <script src="/socket.io/socket.io.js"></script>
-  <script src="jquery.min.js"></script>
-
-  <script>
-    var socket = io.connect('http://localhost:8080');
-
-    socket.on('connect', function () {
-      console.log('Client has connected to the server!');
-    });
-
-    socket.on('news', function (data) {
-      $("#iomsg").html(data);
-      socket.emit('newsresponse', 'this is news response');
-    });
-  </script>
-
+    <title>
+        <%= title %>
+    </title>
+    <link rel="stylesheet" href="css/bootstrap.min.css">
+    <link rel="stylesheet" href="css/style.css">
+    <!-- Propeller card -->
+    <link rel="stylesheet" type="text/css" href="css/card.css">
+    <script src="js/bootstrap.min.js"></script>
+    <script src="/socket.io/socket.io.js"></script>
+    <script src="jquery.min.js"></script>
+    <script>
+        function removeCard(){
+            $(this).parent().remove();
+        }
+        $(function () {
+            var socket = io();
+            $('form').submit(function () {
+                socket.emit('chat message', {
+                    name: "STUDENT" + $('#course-name').val(),
+                    student: $('#course-student').val(),
+                    absence: $('#course-absence').val(),
+                });
+                return false;
+            });
+        });
+    </script>
 </head>
 
 <body>
-  <p>
-    <%= message %>
-  </p>
-  <div style="color:#3333ff;" id='iomsg'></div>
-  <div>SALAM ALI SHAMAKHI</div>
+    <div class="container" id="messages"></div>
 </body>
+
 
 </html>

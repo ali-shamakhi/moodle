@@ -1,0 +1,17 @@
+.pmd-card-media {
+    margin-bottom: 1rem;
+}
+
+.media-body {
+    padding-top: 20px
+}
+.modal-header{
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    border-bottom: 1px solid #e9ecef;
+}
+.modal-header .close{
+    padding: 1rem;
+    margin: -1rem -1rem -1rem auto;
+}

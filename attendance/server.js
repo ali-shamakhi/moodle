@@ -3,10 +3,12 @@ var io = require('socket.io');
 var http = require('http');
 var bodyParser = require('body-parser');
 var cache = require('memory-cache');
+var redis = require('redis');
 
 var app = express();
 var server = http.createServer(app);
 var listener = io.listen(server);
+var client = redis.createClient();
 
 app.use(bodyParser.urlencoded({extended: false}));
 app.use(express.static(__dirname + '/views'));
@@ -35,20 +37,27 @@ listener.on('connection', function (socket) {
         console.log('Server has disconnected');
     });
     
-    
+    socket.emit('getCourses')
     socket.on('chat message', function(data){
 
         var name = data.name
         var stIndex = name.indexOf("STUDENT")
         var pIndex = name.indexOf("PROF")
 
+        
         if(stIndex > -1){
-            console.log(`student id: ${name.substring(7)}`)
+            // console.log(`student id: ${name.substring(7)}`)
+            //hash withh hashname: student, key: data.name, value of: data.absence
+            client.hset("student", name.substring(7), data.absence, redis.print)
+            client.hgetall("student", function (err, replies) {
+                console.dir(replies)
+            })
             listener.emit('chat message', {
                 name: data.name,
-                student: data.prof,
+                student: data.student,
                 absence: data.absence
             });
+            
         }else if(pIndex > -1){
             console.log(`prof id: ${name.substring(4)}`)
             listener.emit('chat message', {
@@ -56,6 +65,10 @@ listener.on('connection', function (socket) {
                 prof: data.prof,
                 absence: data.absence
             });
+            client.hset("prof", name.substring(4), data.absence, redis.print)
+            client.hgetall("prof", function (err, replies) {
+                console.dir(replies)
+            })
         }
     });
     
