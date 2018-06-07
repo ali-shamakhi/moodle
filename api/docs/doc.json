@@ -10,6 +10,46 @@
         "http"
     ],
     "paths": {
+        "/check_login.php": {
+            "get": {
+                "tags": [
+                    "Login"
+                ],
+                "summary": "Verifies that user is logged in.",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "parameters": [
+                    {
+                        "name": "params",
+                        "in": "query",
+                        "schema": {
+                            "$ref": "#/definitions/CheckLoginParameter"
+                        },
+                        "type": "string",
+                        "format": "application/json",
+                        "default": "\r\n{\r\n\"redirect_url\":\"{DOMAIN}/attendance/\"\r\n}\r\n"
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Authentication Details",
+                        "schema": {
+                            "$ref": "#/definitions/CheckLoginResponse"
+                        }
+                    },
+                    "default": {
+                        "description": "Error",
+                        "examples": [
+                            "\r\n{\r\n\"error\":\"redirect_url is not set\"\r\n}\r\n"
+                        ]
+                    }
+                }
+            }
+        },
         "/course/attend.php": {
             "post": {
                 "tags": [
@@ -25,7 +65,7 @@
                 "parameters": [
                     {
                         "name": "params",
-                        "in": "query",
+                        "in": "body",
                         "description": "The course's ID and the list of present students' IDs",
                         "schema": {
                             "$ref": "#/definitions/CourseAttendParameter"
@@ -110,6 +150,29 @@
         }
     },
     "definitions": {
+        "CheckLoginParameter": {
+            "properties": {
+                "redirect_url": {
+                    "description": "",
+                    "type": "string",
+                    "example": "{DOMAIN}/attendance/"
+                }
+            }
+        },
+        "CheckLoginResponse": {
+            "properties": {
+                "logged_in": {
+                    "description": "",
+                    "type": "boolean",
+                    "example": 0
+                },
+                "login_url": {
+                    "description": "",
+                    "type": "string",
+                    "example": "{DOMAIN}/login?redirect={DOMAIN}/attendance/"
+                }
+            }
+        },
         "CourseAttendParameter": {
             "properties": {
                 "course_id": {

@@ -43,7 +43,7 @@ class CoursesResponse
      */
     public $student_courses;
 
-    public function __construct($result, $message, $teachers_courses, $student_courses)
+    public function __construct($result, $message, $teachers_courses=null, $student_courses=null)
     {
         $this->result = $result;
         $this->message = $message;
