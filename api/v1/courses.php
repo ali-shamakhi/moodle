@@ -38,11 +38,23 @@ header("Content-Type: application/json; charset=UTF-8");
  * )
  */
 
+if ($USER === null || $userid == 0) {
+    $courses = new CoursesResponse(-1, "Error: User is not logged in.");
+} else {
+    $mdl_courses = null;
+    try {
+        $mdl_courses = enrol_get_my_courses();
+        $courses = $mdl_courses;;
+    } catch (coding_exception $e) {
+        $courses = new CoursesResponse(-1, "Error: " . $e->getMessage());
+    }
+}
+
 // TODO: implement
-// mock data
-$courses = new CoursesResponse(1, null,
-    array(new TeacherCourse(2, "Computer Science 3962")),
-    array(new StudentCourse(1, "Computer Engineering 3962", 3, array("Ali Shamakhi"))));
+//// mock data
+//$courses = new CoursesResponse(1, null,
+//    array(new TeacherCourse(2, "Computer Science 3962")),
+//    array(new StudentCourse(1, "Computer Engineering 3962", 3, array("Ali Shamakhi"))));
 
 echo json_encode($courses);
 

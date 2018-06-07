@@ -26,7 +26,7 @@ header("Content-Type: application/json; charset=UTF-8");
  *   tags={"Attendance"},
  *   @SWG\Parameter(
  *      name="params",
- *      in="query",
+ *      in="body",
  *      type="string",
  *      format="application/json",
  *      description="The course's ID and the list of present students' IDs",

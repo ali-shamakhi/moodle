@@ -41,6 +41,14 @@ $PAGE->set_pagelayout('login');
 $errormsg = '';
 $errorcode = 0;
 
+// custom redirect
+$redirect_url = null;
+try {
+    $redirect_url = $_GET["redirect"];
+} catch (exception $e) {
+    // nothing
+}
+
 // login page requested session test
 if ($testsession) {
     if ($testsession == $USER->id) {
@@ -267,7 +275,12 @@ if ($session_has_timed_out and !data_submitted()) {
 
 if (empty($SESSION->wantsurl)) {
     $SESSION->wantsurl = null;
-    $referer = get_local_referer(false);
+    $referer = null;
+    if ($redirect_url != null && trim($redirect_url) != "") {
+        $referer = $redirect_url;
+    } else {
+        $referer = get_local_referer(false);
+    }
     if ($referer &&
             $referer != $CFG->wwwroot &&
             $referer != $CFG->wwwroot . '/' &&
