@@ -43,3 +43,5 @@ atlassian-ide-plugin.xml
 /theme/aardvark/
 
 api/api_bootstrap.php
+
+attendance/package-lock\.json
