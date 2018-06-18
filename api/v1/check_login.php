@@ -20,10 +20,10 @@ header("Content-Type: application/json; charset=UTF-8");
 /**
  * @SWG\Get(
  *   path="/check_login.php",
- *   summary="Verifies that user is logged in.",
+ *   summary="Reports whether user is logged in or not.",
  *   consumes={"application/json"},
  *   produces={"application/json"},
- *   tags={"Login"},
+ *   tags={"Authentication"},
  *   parameters={},
  *   @SWG\Parameter(
  *      name="params",
@@ -42,7 +42,7 @@ header("Content-Type: application/json; charset=UTF-8");
  *   ),
  *   @SWG\Response(
  *      response=200,
- *      description="Authentication Details",
+ *      description="Details about user login",
  *      @SWG\Schema(
  *          ref="#/definitions/CheckLoginResponse"
  *      )

@@ -10,12 +10,54 @@
         "http"
     ],
     "paths": {
+        "/authenticate.php": {
+            "post": {
+                "tags": [
+                    "Authentication"
+                ],
+                "summary": "Authenticate and get access token.",
+                "description": "Valid access_domain values are:\r\n\"attendance\"\r\n",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "parameters": [
+                    {
+                        "name": "params",
+                        "in": "body",
+                        "schema": {
+                            "$ref": "#/definitions/AuthenticateParameter"
+                        },
+                        "type": "string",
+                        "format": "application/json"
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Authentication Details",
+                        "schema": {
+                            "$ref": "#/definitions/AuthenticateResponse"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad request",
+                        "examples": [
+                            "\r\n{\r\n\"error\":\"access_domain is unknown\"\r\n}\r\n",
+                            "\r\n{\r\n\"error\":\"access_domain is not set\"\r\n}\r\n",
+                            "\r\n{\r\n\"error\":\"redirect_url is not set\"\r\n}\r\n"
+                        ]
+                    }
+                }
+            }
+        },
         "/check_login.php": {
             "get": {
                 "tags": [
-                    "Login"
+                    "Authentication"
                 ],
-                "summary": "Verifies that user is logged in.",
+                "summary": "Reports whether user is logged in or not.",
                 "consumes": [
                     "application/json"
                 ],
@@ -36,7 +78,7 @@
                 ],
                 "responses": {
                     "200": {
-                        "description": "Authentication Details",
+                        "description": "Details about user login",
                         "schema": {
                             "$ref": "#/definitions/CheckLoginResponse"
                         }
@@ -150,6 +192,34 @@
         }
     },
     "definitions": {
+        "AuthenticateParameter": {
+            "properties": {
+                "redirect_url": {
+                    "description": "",
+                    "type": "string",
+                    "example": "{DOMAIN}/attendance/"
+                },
+                "access_domain": {
+                    "description": "",
+                    "type": "string",
+                    "example": "attendance"
+                }
+            }
+        },
+        "AuthenticateResponse": {
+            "properties": {
+                "access_token": {
+                    "description": "If null, user is not logged in.",
+                    "type": "string",
+                    "example": "72d07ca72eaa1ee6848113d0b5a305ab"
+                },
+                "login_url": {
+                    "description": "",
+                    "type": "string",
+                    "example": "{DOMAIN}/login?redirect={DOMAIN}/attendance/"
+                }
+            }
+        },
         "CheckLoginParameter": {
             "properties": {
                 "redirect_url": {
