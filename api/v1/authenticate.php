@@ -106,7 +106,7 @@ const ATDOM = 'ATDOM_';
 const ATIME = 'ATIME_'; // prefix of const defining max seconds that an access token is valid after last access
 const ATSEC = 'ATSEC_'; // token secret
 define('ATDOM_attendance', 1, true);
-define('ATIME_attendance', 20, true); // TODO: make 1 day
+define('ATIME_attendance', 6 * 60 * 60, true);
 define('ATSEC_attendance', 'HSqIO6X%%kTwHVLrp@sak2%EmMeKqM=A', true);
 
 $access_domain_const = ATDOM.$access_domain;
