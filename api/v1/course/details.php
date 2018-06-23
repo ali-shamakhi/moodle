@@ -58,7 +58,7 @@ $course_id = $params->course_id;
 
 // TODO: implement
 // mock data
-$course_details = new CourseDetailsResponse(1, null,
+$course_details = new CourseDetailsResponse(null,
     $course_id, 1528095600, 1528101000, 10, array("Ali Shamakhi"),
     array(new StudentDetails(7, "Masoud Moharrami", "localhost/moodle/user/pix.php/7/f1.jpg", 3)));
 

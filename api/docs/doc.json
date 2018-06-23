@@ -52,46 +52,6 @@
                 }
             }
         },
-        "/check_login.php": {
-            "get": {
-                "tags": [
-                    "Authentication"
-                ],
-                "summary": "Reports whether user is logged in or not.",
-                "consumes": [
-                    "application/json"
-                ],
-                "produces": [
-                    "application/json"
-                ],
-                "parameters": [
-                    {
-                        "name": "params",
-                        "in": "query",
-                        "schema": {
-                            "$ref": "#/definitions/CheckLoginParameter"
-                        },
-                        "type": "string",
-                        "format": "application/json",
-                        "default": "\r\n{\r\n\"redirect_url\":\"{DOMAIN}/attendance/\"\r\n}\r\n"
-                    }
-                ],
-                "responses": {
-                    "200": {
-                        "description": "Details about user login",
-                        "schema": {
-                            "$ref": "#/definitions/CheckLoginResponse"
-                        }
-                    },
-                    "default": {
-                        "description": "Error",
-                        "examples": [
-                            "\r\n{\r\n\"error\":\"redirect_url is not set\"\r\n}\r\n"
-                        ]
-                    }
-                }
-            }
-        },
         "/course/attend.php": {
             "post": {
                 "tags": [
@@ -176,7 +136,14 @@
                 "produces": [
                     "application/json"
                 ],
-                "parameters": [],
+                "parameters": [
+                    {
+                        "name": "authorization",
+                        "in": "header",
+                        "description": "Access token for authorization",
+                        "type": "string"
+                    }
+                ],
                 "responses": {
                     "200": {
                         "description": "List of the user's courses",
@@ -184,8 +151,39 @@
                             "$ref": "#/definitions/CoursesResponse"
                         }
                     },
+                    "401": {
+                        "description": "Unauthorized",
+                        "examples": [
+                            "\r\n{\r\n\"error\":\"Unauthorized\"\r\n}\r\n"
+                        ]
+                    },
+                    "400": {
+                        "description": "Bad request",
+                        "examples": [
+                            "\r\n{\r\n\"error\":\"no authorization header\"\r\n}\r\n"
+                        ]
+                    }
+                }
+            }
+        },
+        "/user/details.php": {
+            "get": {
+                "tags": [
+                    "Authentication"
+                ],
+                "summary": "Reports whether user is logged in or not.",
+                "produces": [
+                    "application/json"
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Details about user login",
+                        "schema": {
+                            "$ref": "#/definitions/CheckLoginResponse"
+                        }
+                    },
                     "default": {
-                        "description": "Unexpected Error"
+                        "description": "Unknown Error"
                     }
                 }
             }
@@ -220,26 +218,17 @@
                 }
             }
         },
-        "CheckLoginParameter": {
-            "properties": {
-                "redirect_url": {
-                    "description": "",
-                    "type": "string",
-                    "example": "{DOMAIN}/attendance/"
-                }
-            }
-        },
         "CheckLoginResponse": {
             "properties": {
                 "logged_in": {
                     "description": "",
                     "type": "boolean",
-                    "example": 0
+                    "example": "true"
                 },
-                "login_url": {
+                "full_name": {
                     "description": "",
                     "type": "string",
-                    "example": "{DOMAIN}/login?redirect={DOMAIN}/attendance/"
+                    "example": "Ali Shamakhi"
                 }
             }
         },
@@ -263,12 +252,7 @@
         },
         "CourseAttendResponse": {
             "properties": {
-                "result": {
-                    "description": "1 is successful",
-                    "type": "integer",
-                    "example": 1
-                },
-                "message": {
+                "error": {
                     "description": "[Optional field] Error message (if there is error)",
                     "type": "string",
                     "example": "Unknown Error"
@@ -277,12 +261,7 @@
         },
         "CourseDetailsResponse": {
             "properties": {
-                "result": {
-                    "description": "1 is successful",
-                    "type": "integer",
-                    "example": 1
-                },
-                "message": {
+                "error": {
                     "description": "[Optional field] Error message (if there is error)",
                     "type": "string",
                     "example": "Unknown Error"
@@ -336,12 +315,7 @@
         },
         "CoursesResponse": {
             "properties": {
-                "result": {
-                    "description": "1 is successful",
-                    "type": "integer",
-                    "example": 1
-                },
-                "message": {
+                "error": {
                     "description": "[Optional field] Error message (if there is error)",
                     "type": "string",
                     "example": "Unknown Error"

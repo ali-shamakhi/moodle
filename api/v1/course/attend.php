@@ -64,7 +64,7 @@ $attend_students = $params->attend_students;
 
 // TODO: implement
 // mock data
-$result = new CourseAttendResponse(1, null);
+$result = new CourseAttendResponse( null);
 
 echo json_encode($result);
 
