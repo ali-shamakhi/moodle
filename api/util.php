@@ -28,3 +28,40 @@ function get_access_domain_valid_seconds(string $access_domain) {
         default: return 0;
     }
 }
+
+function get_weekday_from_day_name($day_name) {
+    if ($day_name == null) return 0;
+    $day_name = strtolower($day_name);
+    switch ($day_name) {
+        case 'mo':
+        case 'mon':
+        case 'monday':
+            return 1;
+        case 'tu':
+        case 'tue':
+        case 'tuesday':
+            return 2;
+        case 'we':
+        case 'wed':
+        case 'wednesday':
+            return 3;
+        case 'th':
+        case 'thu':
+        case 'thursday':
+            return 4;
+        case 'fr':
+        case 'fri':
+        case 'friday':
+            return 5;
+        case 'sa':
+        case 'sat':
+        case 'saturday':
+            return 6;
+        case 'su':
+        case 'sun':
+        case 'sunday':
+            return 7;
+        default:
+            return 0;
+    }
+}

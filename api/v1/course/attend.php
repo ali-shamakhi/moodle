@@ -100,6 +100,7 @@ $course_id = $attend_details->course_id;
 $attend_students = $attend_details->attend_students;
 
 // TODO: implement
+// TODO: check user privileges
 // mock data
 $result = new CourseAttendResponse( null);
 

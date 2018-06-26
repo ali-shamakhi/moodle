@@ -98,9 +98,36 @@ foreach (get_role_users(5, $course_context) as $student) {
 }
 
 // TODO: really implement
+// TODO: check user privileges
 // more real mock data
-$session_start_timestamp = $current_timestamp - ($current_timestamp % 86400) + (7 * 60 * 60);
-$session_end_timestamp = $current_timestamp - ($current_timestamp % 86400) + (19 * 60 * 60);
+$session_start_timestamp = $current_timestamp - ($current_timestamp % 86400) + (7 * 60 * 60) - date('Z');
+$session_end_timestamp = $current_timestamp - ($current_timestamp % 86400) + (19 * 60 * 60) - date('Z');
+$MONDAY = 1; $TUESDAY = 2; $WEDNESDAY = 3; $THURSDAY = 4; $FRIDAY = 5; $SATURDAY = 6; $SUNDAY = 7;
+$current_weekday = date('N', $current_timestamp);
+preg_match_all('/<p>(.*?)<\/p>/', $course->summary, $summary_paragraphs, PREG_PATTERN_ORDER);
+$timetable_started = false;
+foreach ($summary_paragraphs[1] as $summary_line) {
+    $line = strtolower(str_replace('&nbsp;', '', str_replace(' ', '', $summary_line)));
+    if ($line == '[timetable]') {
+        if ($timetable_started) {
+            break;
+        }
+        $timetable_started = true;
+        continue;
+    }
+    if ($line == '[/timetable]') {
+        break;
+    }
+    if ($timetable_started) {
+        preg_match_all('/([a-z]*)([0-9]{1,2}):([0-9]{2})-([0-9]{1,2}):([0-9]{2})/', $line, $time_parts, PREG_PATTERN_ORDER);
+        $weekday = get_weekday_from_day_name($time_parts[1][0]);
+        if ($weekday == $current_weekday) {
+            $session_start_timestamp = $current_timestamp - ($current_timestamp % 86400) + ((int)$time_parts[2][0]) * 60 * 60 + ((int)$time_parts[3][0]) * 60 - date('Z');
+            $session_end_timestamp = $current_timestamp - ($current_timestamp % 86400) + ((int)$time_parts[4][0]) * 60 * 60 + ((int)$time_parts[5][0]) * 60 - date('Z');
+            break;
+        }
+    }
+}
 $course_details = new CourseDetailsResponse(null, $course_id, $session_start_timestamp, $session_end_timestamp, rand(0, 10), $teachers_names, $students_details);
 
 echo json_encode($course_details);
