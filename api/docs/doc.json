@@ -66,15 +66,20 @@
                 ],
                 "parameters": [
                     {
-                        "name": "params",
+                        "name": "authorization",
+                        "in": "header",
+                        "description": "Access token for authorization",
+                        "type": "string"
+                    },
+                    {
+                        "name": "attend_details",
                         "in": "body",
                         "description": "The course's ID and the list of present students' IDs",
                         "schema": {
                             "$ref": "#/definitions/CourseAttendParameter"
                         },
                         "type": "string",
-                        "format": "application/json",
-                        "default": "\r\n{\r\n   \"course_id\":2,\r\n   \"attend_students\":[\r\n      7,\r\n      21\r\n   ]\r\n}\r\n"
+                        "format": "application/json"
                     }
                 ],
                 "responses": {
