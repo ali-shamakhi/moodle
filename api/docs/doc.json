@@ -104,14 +104,15 @@
                 ],
                 "parameters": [
                     {
-                        "name": "params",
+                        "name": "authorization",
+                        "in": "header",
+                        "description": "Access token for authorization",
+                        "type": "string"
+                    },
+                    {
+                        "name": "course_id",
                         "in": "query",
-                        "schema": {
-                            "$ref": "#/definitions/CourseIdParameter"
-                        },
-                        "type": "string",
-                        "format": "application/json",
-                        "default": "\r\n{\r\n   \"course_id\":2\r\n}\r\n"
+                        "type": "integer"
                     }
                 ],
                 "responses": {

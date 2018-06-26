@@ -77,7 +77,6 @@ header("Content-Type: application/json; charset=UTF-8");
 
 $current_timestamp = time();
 
-// TODO: remove test
 $request_headers = apache_request_headers();
 if (!isset($request_headers['authorization'])) {
     http_response_code(400);
@@ -108,10 +107,10 @@ foreach ($mdl_courses as $course) {
     $user_roles = get_user_roles($course_context, $user_id);
     $teachers_names = array();
     foreach (get_role_users(3, $course_context) as $teacher) {
-        array_push($teachers_names, $teacher->firstname.''.$teacher->lastname);
+        array_push($teachers_names, $teacher->firstname.' '.$teacher->lastname);
     }
     foreach (get_role_users(4, $course_context) as $teacher) {
-        array_push($teachers_names, $teacher->firstname.''.$teacher->lastname);
+        array_push($teachers_names, $teacher->firstname.' '.$teacher->lastname);
     }
     $is_teacher = false;
     $is_student = false;
