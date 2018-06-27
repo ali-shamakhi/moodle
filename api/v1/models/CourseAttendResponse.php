@@ -5,14 +5,6 @@
 
 class CourseAttendResponse
 {
-    /**
-     * @var int
-     * @SWG\Property(
-     *     description="1 is successful",
-     *     example=1
-     * )
-     */
-    public $result;
 
     /**
      * @var string
@@ -21,11 +13,10 @@ class CourseAttendResponse
      *     example="Unknown Error"
      * )
      */
-    public $message;
+    public $error;
 
-    public function __construct($result, $message)
+    public function __construct($error)
     {
-        $this->result = $result;
-        $this->message = $message;
+        $this->error = $error;
     }
 }

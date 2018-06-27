@@ -9,7 +9,7 @@ class CheckLoginResponse
     /**
      * @var boolean
      * @SWG\Property(
-     *     example=0
+     *     example="true"
      * )
      */
     public $logged_in;
@@ -17,14 +17,14 @@ class CheckLoginResponse
     /**
      * @var string
      * @SWG\Property(
-     *     example="{DOMAIN}/login?redirect={DOMAIN}/attendance/"
+     *     example="Ali Shamakhi"
      * )
      */
-    public $login_url;
+    public $full_name;
 
-    public function __construct($logged_in, $login_url)
+    public function __construct($logged_in, $full_name)
     {
         $this->logged_in = $logged_in;
-        $this->login_url = $login_url;
+        $this->full_name = $full_name;
     }
 }

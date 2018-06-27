@@ -4,11 +4,12 @@
     <title>
         <%= title %>
     </title>
+    <!-- todo: change component all to bootstrap 4, So we can use more component -->
     <link rel="stylesheet" href="css/bootstrap.min.css">
     <link rel="stylesheet" href="css/style.css">
     <!-- Propeller card -->
-    <link rel="stylesheet" type="text/css" href="css/card.css">
-    <script src="js/bootstrap.min.js"></script>
+    <!-- <link rel="stylesheet" type="text/css" href="css/card.css"> -->
+    <link href="css/modal.css" type="text/css" rel="stylesheet" />
     <style>
         form {
             background: #000;
@@ -43,8 +44,21 @@
         });
     </script>
     <script>
-        function removeCard(){
-            $(this).parent().remove();
+        var selectedCard;
+        function setSelectedCard(selected){
+            selectedCard = $(selected)
+        }
+        function doAttending() {
+            var socket = io();
+            socket.emit('chat message', {
+                name: "STUDENT" + $('#course-name').val(),
+                student: $('#course-student').val(),
+                absence: $('#course-absence').val(),
+            });
+            console.log('Student Request Sent!')
+            console.log(selectedCard)
+            selectedCard.id.remove();
+            console.log('After Shave!')
         }
         $(function () {
             var socket = io();
@@ -58,26 +72,26 @@
             });
             socket.on('chat message', function (data) {
                 if (data.name.indexOf("PROF") > -1) {
-                    $('#messages').append(
-                        $('<div>').addClass("col-md-4 col-sm-6").attr('id', data.name).append(
-                            $('<div>').addClass(
-                                "pmd-card pmd-card-media-inline pmd-card-default pmd-z-depth").css({
-                                "background-color": "#12a474",
-                                "color": "white"
-                            }).click(removeCard).append(
-                                $('<div>').addClass("pmd-card-media").append(
-                                    $('<div>').addClass("media-body").append(
-                                        $('<h3>').addClass("pmd-card-title-text").text(data.name),
-                                        $('<h4>').addClass("pmd-card-title-text").text(data.prof),
-                                        $('<h2>').addClass("pmd-card-title-text").text('# Absent: ' +
-                                            data.absence),
+                    $('#coursesList').append(
+                        $('<div>').on('click', setSelectedCard($(this))).addClass( //.on("click", removeCard)
+                            'col-lg-4 col-md-6 col-sm-12 ltr').attr({
+                                "id": data.name,
+                            "data-toggle": "modal",
+                            "data-target": "#classAttendancy"
+                        }).append(
+                            $('<div>').addClass("card-img").append(
+                                $('<div>').addClass("wrapper-img").append(
+                                    $('<div>').addClass("content-img col-md-7").append(
+                                        $('<h5>').addClass("card-title").text(data.name.substring(4)),
+                                        $('<h6>').addClass("card-title").text(data.prof),
+                                        $('<h6>').addClass("card-title").text(data.absence +
+                                            ' غیبت')
                                     ),
-                                    $('<div>').addClass("media-right media-middle").prepend(
+                                    $('<div>').addClass("text-center col-md-5").append(
                                         $('<img>', {
-                                            src: 'img/500x500.png',
-                                            height: 112,
-                                            width: 112
-                                        }).addClass("rounded img-fluid"))
+                                            src: 'img/500x500.png'
+                                        }).addClass('responsive-img')
+                                    )
                                 )
                             )
                         )
@@ -89,13 +103,36 @@
 </head>
 
 <body>
-    <div class="container" id="messages"></div>
-    <form action="">
-        <input id="course-name" autocomplete="off" placeholder="name" />
-        <input id="course-student" autocomplete="off" placeholder="prof-name" />
-        <input id="course-absence" autocomplete="off" placeholder="absence" />
-        <button>Send</button>
-    </form>
+    <div class="container" id="messages">
+        <div id="classAttendancy" class="modal fade" tabindex="-1" role="dialog" aria-labelledby="classSettingTitle" aria-hidden="true">
+            <div class="modal-dialog" role="document">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h5 class="modal-title" id="exampleModalCenterTitle">سامانه حضور و غیاب</h5>
+                        <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                            <span aria-hidden="true">&times;</span>
+                        </button>
+                    </div>
+                    <div class="modal-body" id="students">
+                        <p dir="rtl">حضوری شما زده شد!</p>
+                    </div>
+                    <div class="modal-footer ltr" id="modal-btn">
+                        <button type="button" class="btn btn-primary" data-dismiss="modal" onclick="doAttending()">ممنون</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="row" id="coursesList"></div>
+        <div class="col-sm-12">
+            <form class="sendform">
+                <input id="course-name" autocomplete="off" placeholder="name" />
+                <input id="course-student" autocomplete="off" placeholder="prof-name" />
+                <input id="course-absence" autocomplete="off" placeholder="absence" />
+                <button>Send</button>
+            </form>
+        </div>
+        <script type="text/javascript" src="js/bootstrap.min.js"></script>
+    </div>
 </body>
 
 

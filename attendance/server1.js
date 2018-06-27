@@ -37,41 +37,21 @@ listener.on('connection', function (socket) {
 
     console.log('Connection to client established');
     socket.on('login', function () {
-        // var options = {
-        //     host: url,
-        //     port: 80,
-        //     path: '/resource?id=foo&bar=baz',
-        //     method: 'POST'
-        // };
+        var options = {
+            host: url,
+            port: 80,
+            path: '/resource?id=foo&bar=baz',
+            method: 'POST'
+        };
 
-        // http.request(options, function (res) {
-        //     console.log('STATUS: ' + res.statusCode);
-        //     console.log('HEADERS: ' + JSON.stringify(res.headers));
-        //     res.setEncoding('utf8');
-        //     res.on('data', function (chunk) {
-        //         console.log('BODY: ' + chunk);
-        //     });
-        // }).end();
-
-        var userData = getUserClasse()
-
-        if(cache.get("token") == null){
-            app.redirect_url(checkLogin(data))
-        }else{
-            let classes = getTeacherData(data)
-            for(courses in classes){
-                if(course.absence_count != null){
-                    cache.set('isTeacher', false)
-                }else {
-                    cache.set('isTeacher', true)
-                }
-            }
-            listener.emit('login', {
-                isLogin: true,
-                classes: classes,
-
+        http.request(options, function (res) {
+            console.log('STATUS: ' + res.statusCode);
+            console.log('HEADERS: ' + JSON.stringify(res.headers));
+            res.setEncoding('utf8');
+            res.on('data', function (chunk) {
+                console.log('BODY: ' + chunk);
             });
-        }
+        }).end();
     });
     socket.on('disconnect', function () {
         console.log('Server has disconnected');
@@ -82,6 +62,16 @@ listener.on('connection', function (socket) {
             name: data.name,
             students: data.students
         });
+    });
+
+    socket.on('login',function(data){
+        if(cache.get("token") == null){
+            app.redirect_url(checkLogin(data))
+        }else{
+            listener.emit('login', {
+                isLogin: true
+            });
+        }
     });
 
     socket.on('chat message', function (data) {
@@ -129,7 +119,7 @@ function checkLogin(data) {
 
     // Configure the request
     var options = {
-        url: 'localhost/moodle/authenticate.php',
+        url: 'localhost/moodle',
         method: 'POST',
         headers: headers,
         form: {
@@ -150,32 +140,6 @@ function checkLogin(data) {
         }
     })
 
-}
-
-function getUserClasse(data){
-    var headers = {
-        'User-Agent': 'Super Agent/0.0.1',
-        'Content-Type': 'application/x-www-form-urlencoded',
-        'authorization': cache.get('token')
-    }
-
-    // Configure the request
-    var options = {
-        url: 'localhost/moodle/courses.php',
-        method: 'GET',
-        headers: headers
-    }
-
-    // Start the request
-    request(options, function (error, response, body) {
-        if (!error && response.statusCode == 200) {
-            if(body.teacher_courses != null){
-                return body.teacher_courses
-            }else{
-                return body.student_courses
-            }
-        }
-    })
 }
 
 server.listen(8080);

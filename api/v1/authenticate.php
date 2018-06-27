@@ -9,6 +9,8 @@ require_once('../../config.php');
 require_once($CFG->dirroot .'/course/lib.php');
 require_once($CFG->libdir .'/filelib.php');
 
+require_once('../util.php');
+
 foreach (glob("models/*.php") as $class_name) {
     include($class_name);
 }
@@ -79,7 +81,6 @@ if ($request_body === null) {
 $check_login_parameter = json_decode($request_body);
 
 //$check_login_parameter = json_decode($_POST["params"]);
-error_log("INIT: input read");
 
 // parameters validation ...
 
@@ -106,7 +107,7 @@ const ATDOM = 'ATDOM_';
 const ATIME = 'ATIME_'; // prefix of const defining max seconds that an access token is valid after last access
 const ATSEC = 'ATSEC_'; // token secret
 define('ATDOM_attendance', 1, true);
-define('ATIME_attendance', 20, true); // TODO: make 1 day
+define('ATIME_attendance', get_access_domain_valid_seconds('attendance'), true);
 define('ATSEC_attendance', 'HSqIO6X%%kTwHVLrp@sak2%EmMeKqM=A', true);
 
 $access_domain_const = ATDOM.$access_domain;
@@ -118,8 +119,6 @@ if(!defined($access_domain_const)) {
     echo '{"error": "access_domain=\"'.$access_domain.'\" is unknown"}';
     die;
 }
-
-error_log("VFY: verified");
 
 // ... all parameters verified above
 
@@ -184,8 +183,6 @@ try {
         $auth_record->token = $access_token;
     }
 }
-
-error_log("DREADY: data ready");
 
 $check_login_response = new AuthenticateResponse($access_token, $login_url);
 

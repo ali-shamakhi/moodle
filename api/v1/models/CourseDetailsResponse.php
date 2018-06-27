@@ -5,14 +5,6 @@
 
 class CourseDetailsResponse
 {
-    /**
-     * @var int
-     * @SWG\Property(
-     *     description="1 is successful",
-     *     example=1
-     * )
-     */
-    public $result;
 
     /**
      * @var string
@@ -21,7 +13,7 @@ class CourseDetailsResponse
      *     example="Unknown Error"
      * )
      */
-    public $message;
+    public $error;
 
     /**
      * @var int
@@ -78,10 +70,9 @@ class CourseDetailsResponse
      */
     public $students_details;
 
-    public function __construct($result, $message, $course_id, $session_start_timestamp, $session_end_timestamp, $past_attendance_count, $teachers_full_name, $students_details)
+    public function __construct($error, $course_id, $session_start_timestamp, $session_end_timestamp, $past_attendance_count, $teachers_full_name, $students_details)
     {
-        $this->result = $result;
-        $this->message = $message;
+        $this->error = $error;
         $this->course_id = $course_id;
         $this->session_start_timestamp = $session_start_timestamp;
         $this->session_end_timestamp = $session_end_timestamp;
