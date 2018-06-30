@@ -4,7 +4,9 @@ var http = require('http');
 var redis = require('redis');
 var bodyParser = require('body-parser');
 var cookieParser = require('cookie-parser');
+var browser = require('browser-cookies');
 var axios = require('axios');
+
 
 var app = express();
 var server = http.createServer(app);
@@ -23,16 +25,31 @@ app.set('view options', {
 
 app.get('/student', function (req, res) {
 
-    cookieStatus(req, res, '/student');
+    var courses = getCourses(req, res, '/student');
+    var username = getUserName();
 
     res.render('student', {
-        title: 'Your Attendance Page',
+        title: 'Student Attendance Page',
+        courses: courses,
+        username: username
     });
 });
 
 app.get('/teacher', function (req, res) {
+
+    var courses = getCourses(req, res, '/teacher');
+    var username = getUserName();
+    var token = getToken();
+
+    console.log(coourses)
+    console.log(username)
+    console.log(token)
+
     res.render('teacher', {
         title: 'Student Attendance Page',
+        courses: courses,
+        username: username,
+        token: token
     });
 });
 
@@ -44,7 +61,7 @@ listener.on('connection', function (socket) {
         console.log('Server has disconnected');
     });
 
-    socket.on('chat message', function (data) {
+    socket.on('attendance', function (data) {
 
         var name = data.name
         var stIndex = name.indexOf("STUDENT")
@@ -58,7 +75,7 @@ listener.on('connection', function (socket) {
             client.hgetall("student", function (err, replies) {
                 console.dir(replies)
             })
-            listener.emit('chat message', {
+            listener.emit('attendance', {
                 name: data.name,
                 student: data.student,
                 absence: data.absence
@@ -66,7 +83,7 @@ listener.on('connection', function (socket) {
 
         } else if (pIndex > -1) {
             console.log(`prof id: ${name.substring(4)}`)
-            listener.emit('chat message', {
+            listener.emit('attendance', {
                 name: data.name,
                 prof: data.prof,
                 absence: data.absence
@@ -83,7 +100,7 @@ function clearCookie(res) {
     res.clearCookie('attendance');
 }
 
-async function cookieStatus(req, res, page) {
+function getCourses(req, res, page) {
     var cookie = req.cookies['attendance'];
     let cookieOptions = {
         // maxAge: 1000 * 60 * 15, // would expire after 15 minutes
@@ -94,20 +111,22 @@ async function cookieStatus(req, res, page) {
         redirect_url: redirPage,
         access_domain: "attendance"
     }
-    if (cookie) {
+    if (cookie) { // web app is login
         // read cookies
         console.log(cookie)
         // clear cookie
         // clearCookie(res);
-        var courses = getUserClasse(req)
-    } else {
+        var courses = retriveClasses(req)
+        return courses
+
+    } else { // web app is NOT login
         var redirPage = 'localhost:8080' + page
 
-        await axios.post('http://localhost/moodle/api/v1/authenticate.php', options)
+        axios.post('http://localhost/moodle/api/v1/authenticate.php', options)
             .then(function (response) {
-                console.log('response: ', response.data)
+                // console.log('response: ', response.data)
 
-                if (response.token == null) {
+                if (response.data.token == null) {
                     console.log('token is null');
                     res.redirect(response.data.login_url);
                 } else {
@@ -115,18 +134,18 @@ async function cookieStatus(req, res, page) {
                     // Set cookie
                     res.cookie('attendance', response.data.token, cookieOptions) // cookieOptions is optional
                     console.log('cookie created successfully');
-                    cookieStatus(res, req, page)
+                    getCourses(res, req, page)
                 }
             }).catch(function (error) {
                 console.log('error: ', error);
             });
     }
 }
-async function getUserClasse(req) {
+function retriveClasses(req) {
     var page = page.substring(1);
     var token = req.cookie['attendance'];
     var courses = null;
-    await axios.get('http://localhost/moodle/api/v1/courses.php', {
+    axios.get('http://localhost/moodle/api/v1/courses.php', {
             params: {
                 token: token
             }
@@ -145,6 +164,29 @@ async function getUserClasse(req) {
 
     return courses;
 }
+function getUserName(){
+    axios.get('http://localhost/moodle/api/v1/user/details.php',{})
+    .then(function(response){
+        console.log(response.data)
+        return response.data.full_name
+    });
+}
 
+function getCourseDetail(token, course_id){
+    var url = 'http://localhost/moodle/api/v1/course/details.php';
+    axios.get(url, {
+        headers: {'authorization': token},
+        params: {
+            course_id: course_id
+        }
+      }).then(function(response){
+        return response.data
+      })
+}
+function getToken(){
+    var token = browser.get('attendance');
+    console.log('getToken: ', token)
+    return token
+}
 
 app.listen(8080);

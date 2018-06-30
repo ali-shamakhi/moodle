@@ -50,7 +50,7 @@
         }
         function doAttending() {
             var socket = io();
-            socket.emit('chat message', {
+            socket.emit('attendance', {
                 name: "STUDENT" + $('#course-name').val(),
                 student: $('#course-student').val(),
                 absence: $('#course-absence').val(),
@@ -63,14 +63,14 @@
         $(function () {
             var socket = io();
             $('form').submit(function () {
-                socket.emit('chat message', {
+                socket.emit('attendance', {
                     name: "STUDENT" + $('#course-name').val(),
                     student: $('#course-student').val(),
                     absence: $('#course-absence').val(),
                 });
                 return false;
             });
-            socket.on('chat message', function (data) {
+            socket.on('attendance', function (data) {
                 if (data.name.indexOf("PROF") > -1) {
                     $('#coursesList').append(
                         $('<div>').on('click', setSelectedCard($(this))).addClass( //.on("click", removeCard)
