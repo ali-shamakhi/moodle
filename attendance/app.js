@@ -129,14 +129,13 @@ async function getCourses(req, res, page) {
 
                 if (response.data.token == null) {
                     console.log('token is null');
-                    window.location.replace(response.data.login_url)
-                    // res.redirect(response.data.login_url);
+                    res.redirect(response.data.login_url);
                 } else {
                     console.log('token is: ', response.data.token);
                     // Set cookie
                     res.cookie('attendance', response.data.token, cookieOptions) // cookieOptions is optional
                     console.log('cookie created successfully');
-                    getCourses(res, req, page)
+                    res.redirect(redirPage);
                 }
             }).catch(function (error) {
                 console.log('error: ', error);
