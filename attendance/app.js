@@ -100,7 +100,7 @@ function clearCookie(res) {
     res.clearCookie('attendance');
 }
 
-function getCourses(req, res, page) {
+async function getCourses(req, res, page) {
     var cookie = req.cookies['attendance'];
     let cookieOptions = {
         // maxAge: 1000 * 60 * 15, // would expire after 15 minutes
@@ -122,7 +122,7 @@ function getCourses(req, res, page) {
     } else { // web app is NOT login
         var redirPage = 'localhost:8080' + page
 
-        axios.post('http://localhost/moodle/api/v1/authenticate.php', options)
+        await axios.post('http://localhost/moodle/api/v1/authenticate.php', options)
             .then(function (response) {
                 // console.log('response: ', response.data)
 
@@ -141,11 +141,11 @@ function getCourses(req, res, page) {
             });
     }
 }
-function retriveClasses(req) {
+async function retriveClasses(req) {
     var page = page.substring(1);
     var token = req.cookie['attendance'];
     var courses = null;
-    axios.get('http://localhost/moodle/api/v1/courses.php', {
+    await axios.get('http://localhost/moodle/api/v1/courses.php', {
             params: {
                 token: token
             }
@@ -164,8 +164,8 @@ function retriveClasses(req) {
 
     return courses;
 }
-function getUserName(){
-    axios.get('http://localhost/moodle/api/v1/user/details.php',{})
+async function getUserName(){
+    await axios.get('http://localhost/moodle/api/v1/user/details.php',{})
     .then(function(response){
         console.log(response.data)
         return response.data.full_name
