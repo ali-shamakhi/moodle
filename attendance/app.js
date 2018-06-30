@@ -102,6 +102,8 @@ function clearCookie(res) {
 
 async function getCourses(req, res, page) {
     var cookie = req.cookies['attendance'];
+    var redirPage = 'localhost:8080' + page
+
     let cookieOptions = {
         // maxAge: 1000 * 60 * 15, // would expire after 15 minutes
         httpOnly: true, // The cookie only accessible by the web server
@@ -120,7 +122,6 @@ async function getCourses(req, res, page) {
         return courses
 
     } else { // web app is NOT login
-        var redirPage = 'localhost:8080' + page
 
         await axios.post('http://localhost/moodle/api/v1/authenticate.php', options)
             .then(function (response) {
@@ -128,7 +129,8 @@ async function getCourses(req, res, page) {
 
                 if (response.data.token == null) {
                     console.log('token is null');
-                    res.redirect(response.data.login_url);
+                    window.location.replace(response.data.login_url)
+                    // res.redirect(response.data.login_url);
                 } else {
                     console.log('token is: ', response.data.token);
                     // Set cookie
