@@ -25,7 +25,7 @@ app.set('view options', {
 
 app.get('/student', function (req, res) {
 
-    var courses = getCourses(req, res, '/student');
+    var courses = getCourses(token, '/student');
     var username = getUserName();
 
     res.render('student', {
@@ -37,9 +37,9 @@ app.get('/student', function (req, res) {
 
 app.get('/teacher', function (req, res) {
 
-    var courses = getCourses(req, res, '/teacher');
-    var username = getUserName();
     var token = getToken();
+    var courses = getCourses(token, '/teacher');
+    var username = getUserName();
 
     console.log(coourses)
     console.log(username)
@@ -100,15 +100,15 @@ function clearCookie(res) {
     res.clearCookie('attendance');
 }
 
-async function getCourses(req, res, page) {
+async function getCourses(page) {
     var cookie = req.cookies['attendance'];
     var redirPage = 'localhost:8080' + page
 
-    let cookieOptions = {
-        // maxAge: 1000 * 60 * 15, // would expire after 15 minutes
-        httpOnly: true, // The cookie only accessible by the web server
-        signed: false // Indicates if the cookie should be signed
-    }
+    // let cookieOptions = {
+    //     // maxAge: 1000 * 60 * 15, // would expire after 15 minutes
+    //     httpOnly: true, // The cookie only accessible by the web server
+    //     signed: false // Indicates if the cookie should be signed
+    // }
     var options = {
         redirect_url: redirPage,
         access_domain: "attendance"
@@ -118,7 +118,7 @@ async function getCourses(req, res, page) {
         console.log(cookie)
         // clear cookie
         // clearCookie(res);
-        var courses = retriveClasses(req)
+        var courses = retriveClasses()
         return courses
 
     } else { // web app is NOT login
@@ -129,22 +129,23 @@ async function getCourses(req, res, page) {
 
                 if (response.data.token == null) {
                     console.log('token is null');
-                    res.redirect(response.data.login_url);
+                    response.redirect(response.data.login_url);
                 } else {
                     console.log('token is: ', response.data.token);
                     // Set cookie
-                    res.cookie('attendance', response.data.token, cookieOptions) // cookieOptions is optional
+                    // res.cookie('attendance', response.data.token, cookieOptions) // cookieOptions is optional
+                    browser.set('attendance', response.data.token)
                     console.log('cookie created successfully');
-                    res.redirect(redirPage);
+                    response.redirect(redirPage);
                 }
             }).catch(function (error) {
                 console.log('error: ', error);
             });
     }
 }
-async function retriveClasses(req) {
+async function retriveClasses() {
     var page = page.substring(1);
-    var token = req.cookie['attendance'];
+    var token = getToken();
     var courses = null;
     await axios.get('http://localhost/moodle/api/v1/courses.php', {
             params: {
@@ -165,26 +166,29 @@ async function retriveClasses(req) {
 
     return courses;
 }
-async function getUserName(){
-    await axios.get('http://localhost/moodle/api/v1/user/details.php',{})
-    .then(function(response){
-        console.log(response.data)
-        return response.data.full_name
-    });
+async function getUserName() {
+    await axios.get('http://localhost/moodle/api/v1/user/details.php', {})
+        .then(function (response) {
+            console.log(response.data)
+            return response.data.full_name
+        });
 }
 
-function getCourseDetail(token, course_id){
+function getCourseDetail(token, course_id) {
     var url = 'http://localhost/moodle/api/v1/course/details.php';
     axios.get(url, {
-        headers: {'authorization': token},
+        headers: {
+            'authorization': token
+        },
         params: {
             course_id: course_id
         }
-      }).then(function(response){
+    }).then(function (response) {
         return response.data
-      })
+    })
 }
-function getToken(){
+
+function getToken() {
     var token = browser.get('attendance');
     console.log('getToken: ', token)
     return token
