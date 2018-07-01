@@ -34,7 +34,7 @@ app.get('/student', function (req, res) {
         console.log(coourses)
         console.log(username)
     } else {
-        var url = getAuthenticateStatus('/student');
+        var url = getAuthenticateStatus('/teacher');
         res.redirect(url);
     }
 
@@ -124,15 +124,16 @@ async function getAuthenticateStatus(page) {
     await axios.post('http://localhost/moodle/api/v1/authenticate.php', options)
         .then(function (response) {
             // console.log('response: ', response.data)
-
+            // console.log('token: \'', response.data.access_token,'\'')
             if (response.data.token == null) {
                 console.log('token is null');
+                console.log('login url: ', response.data.login_url)
                 return response.data.login_url
             } else {
-                console.log('token is: ', response.data.token);
+                console.log('token is: ', response.data.access_token);
                 // Set cookie
                 // res.cookie('attendance', response.data.token, cookieOptions) // cookieOptions is optional
-                browser.set('attendance', response.data.token)
+                browser.set('attendance', response.data.access_token)
                 console.log('cookie created successfully');
                 return redirPage
             }
