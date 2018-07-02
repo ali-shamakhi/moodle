@@ -8,8 +8,10 @@ if (!file_exists('../../../config.php')) {
 require_once('../../../config.php');
 require_once($CFG->dirroot .'/course/lib.php');
 require_once($CFG->libdir .'/filelib.php');
-
 require_once($CFG->libdir.'/gradelib.php');
+require_once($CFG->libdir.'/completionlib.php');
+require_once($CFG->libdir.'/plagiarismlib.php');
+require_once($CFG->dirroot . '/course/modlib.php');
 require_once($CFG->dirroot.'/user/renderer.php');
 require_once($CFG->dirroot.'/grade/lib.php');
 require_once($CFG->dirroot.'/grade/report/grader/lib.php');
@@ -102,7 +104,8 @@ try {
     die;
 }
 $course_id = $attend_details->course_id;
-if (!$course = $DB->get_record('course', array('id' => $course_id))) {
+$course_record = $DB->get_record('course', array('id' => $course_id));
+if (!$course_record) {
     http_response_code(404);
     echo '{"error": "no course by given course_id found"}';
     die;
@@ -125,7 +128,7 @@ $attendance_category_id = null;
 foreach ($gtree_obj->children as $grade_item) {
     if ($grade_item->type == 'category' && isset($grade_item->name) && strtolower($grade_item->name) == 'attendance') {
         $attendance_category_id = $grade_item->id;
-        error_log('ACI: '.$attendance_category_id);
+//        error_log('ACI: '.$attendance_category_id);
         break;
     }
 }
@@ -136,59 +139,93 @@ if ($attendance_category_id == null) {
     die;
 }
 
-$course = get_course($course_id);
-$session_timestamps = get_course_session_timestamps($course->summary, $current_timestamp);
+$session_timestamps = get_course_session_timestamps($course_record->summary, $current_timestamp);
 $session_start_timestamp = $session_timestamps->start;
 $session_end_timestamp = $session_timestamps->end;
+$local_date_string = $session_timestamps->local_date_string;
 
-$a_data = new stdClass;
-$successful = true;
+//error_log(json_encode(get_fast_modinfo($course_id)));
 
 try {
     $attendance_record = $DB->get_record_sql('SELECT * FROM {assign} 
  WHERE name LIKE "Attendance %" AND course = ? AND allowsubmissionsfromdate = ?', array($course_id, $session_start_timestamp), MUST_EXIST);
-    $a_data->instance = $attendance_record->id;
 } catch (dml_exception $dml_ex) {
-    $a_data->name = 'Attendance '.date('Y F j', $session_start_timestamp);
-    $a_data->course = $course_id;
-    $a_data->intro = '';
-    $a_data->introformat = FORMAT_HTML;
-    $a_data->alwaysshowdescription = 1;
-    $a_data->submissiondrafts = 0;
-    $a_data->requiresubmissionstatement = 0;
-    $a_data->sendnotifications = 0;
-    $a_data->sendlatenotifications = 0;
-    $a_data->sendstudentnotifications = 1;
-    $a_data->allowsubmissionsfromdate = $session_start_timestamp;
-    $a_data->duedate = $session_end_timestamp;
-    $a_data->grade = 1;
-    $a_data->completionunlocked = 1;
-    $a_data->completionsubmit = 1;
-    $a_data->teamsubmission = 0;
-    $a_data->requireallteammemberssubmit = 0;
-    $a_data->blindmarking = 0;
-    $a_data->maxattempts = -1;
-    $a_data->markingworkflow = 0;
-    $a_data->markingallocation = 0;
-    $successful = assign_update_instance($a_data, null);
+    $assign_data = new stdClass;
+    $assign_data->coursemodule = 0;
+    $assign_data->section = 0;
+    $assign_data->module = 1;  // assign
+    $assign_data->modulename = 'assign';
+    $assign_data->instance = 0;
+    $assign_data->add = 'assign';
+    $assign_data->update = 0;
+    $assign_data->return = 0;
+    $assign_data->sr = 0;
+    $assign_data->groupmode = 0;
+    $assign_data->availabilityconditionsjson = '{"op":"&","c":[],"showc":[]}';
+    error_log($local_date_string);
+    $assign_data->name = 'Attendance '.$local_date_string;
+    $assign_data->course = $course_id;
+    $assign_data->intro = '';                  // HIDDEN!
+    $assign_data->introformat = FORMAT_HTML;   // HIDDEN!
+    $assign_data->showdescription = 0;
+    $assign_data->alwaysshowdescription = 1;
+    $assign_data->nosubmissions = 1;           // HIDDEN!
+    $assign_data->assignsubmission_comments_enabled = 1;
+    $assign_data->assignfeedback_comments_enabled = 1;
+    $assign_data->assignfeedback_comments_commentinline = 0;
+    $assign_data->submissiondrafts = 0;
+    $assign_data->requiresubmissionstatement = 0;
+    $assign_data->attemptreopenmethod = 'none';
+    $assign_data->sendnotifications = 0;
+    $assign_data->sendlatenotifications = 0;
+    $assign_data->sendstudentnotifications = 1;
+    $assign_data->allowsubmissionsfromdate = $session_start_timestamp;
+    $assign_data->duedate = $session_end_timestamp;
+    $assign_data->cutoffdate = 0;
+    $assign_data->gradingduedate = 0;
+    $assign_data->grade = 1;
+    $assign_data->advancedgradingmethod_submissions = '';
+    $assign_data->gradecat = $attendance_category_id;
+    $assign_data->gradepass = 1.0;
+    $assign_data->completionunlocked = 1;
+    $assign_data->completionsubmit = 1;
+    $assign_data->completion = 0;
+    $assign_data->completionexpected = 0;
+    $assign_data->tags = array();
+    $assign_data->teamsubmission = 0;
+    $assign_data->preventsubmissionnotingroup = 0;
+    $assign_data->requireallteammemberssubmit = 0;
+    $assign_data->blindmarking = 0;
+    $assign_data->revealidentities = 0;        // HIDDEN!
+    $assign_data->maxattempts = -1;
+    $assign_data->markingworkflow = 0;
+    $assign_data->markingallocation = 0;
+    $assign_data->visible = 1;
+    $assign_data->visibleoncoursepage = 1;
+    $assign_data->cmidnumber = '';
+    $assign_data->competency_rule = 0;
+    try {
+        $attendance_moduleinfo = add_moduleinfo($assign_data, get_course($course_id));
+    } catch (dml_exception $e) {
+        http_response_code(500);
+        echo '{"error": "dml_exception: '.$e->getTraceAsString().'"}';
+        die;
+    } catch (moodle_exception $e) {
+        http_response_code(500);
+        echo '{"error": "moodle_exception: '.$e->getTraceAsString().'"}';
+        die;
+    }
 }
 
-if ($successful) {
-    if (!isset($a_data->instance)) {
-        try {
-            $attendance_record = $DB->get_record_sql('SELECT * FROM {assign} 
+if (!isset($attendance_record) || !isset($attendance_record->id)) {
+    try {
+        $attendance_record = $DB->get_record_sql('SELECT * FROM {assign} 
  WHERE name LIKE "Attendance %" AND course = ? AND allowsubmissionsfromdate = ?', array($course_id, $session_start_timestamp), MUST_EXIST);
-            $a_data->instance = $attendance_record->id;
-        } catch (dml_exception $dml_ex) {
-            http_response_code(500);
-            echo '{"error": "CODING ERROR: Attendance Assignment record not found after successful insertion!"}';
-            die;
-        }
+    } catch (dml_exception $dml_ex) {
+          http_response_code(500);
+          echo '{"error": "CODING ERROR: Attendance Assignment record not found after successful insertion!"}';
+          die;
     }
-} else {
-    http_response_code(500);
-    echo '{"error": "Unexpected error on creating Attendance Assignment"}';
-    die;
 }
 
 // TODO: grade students

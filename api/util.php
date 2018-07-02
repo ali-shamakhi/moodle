@@ -75,9 +75,12 @@ const SATURDAY = 6;
 const SUNDAY = 7;
 
 function get_course_session_timestamps($course_summary, int $current_timestamp) {
+    $local_timestamp = $current_timestamp + date('Z');
+//    error_log('cur: '.$current_timestamp);
+//    error_log('loc: '.$local_timestamp);
     $session_start_timestamp = $current_timestamp - ($current_timestamp % 86400) + (7 * 60 * 60) - date('Z');
     $session_end_timestamp = $current_timestamp - ($current_timestamp % 86400) + (19 * 60 * 60) - date('Z');
-    $current_weekday = date('N', $current_timestamp);
+    $current_weekday = date('N', $local_timestamp);
     preg_match_all('/<p>(.*?)<\/p>/', $course_summary, $summary_paragraphs, PREG_PATTERN_ORDER);
     $timetable_started = false;
     foreach ($summary_paragraphs[1] as $summary_line) {
@@ -105,5 +108,6 @@ function get_course_session_timestamps($course_summary, int $current_timestamp) 
     $session_timestamps = new stdClass;
     $session_timestamps->start = $session_start_timestamp;
     $session_timestamps->end = $session_end_timestamp;
+    $session_timestamps->local_date_string = date('Y F j', $local_timestamp);
     return $session_timestamps;
 }
