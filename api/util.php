@@ -22,13 +22,6 @@ function get_userid_accessdomain_access_by_token(moodle_database $DB, int $curre
     }
 }
 
-function get_access_domain_valid_seconds(string $access_domain) {
-    switch ($access_domain) {
-        case 'attendance': return (int)(6 * 60 * 60);
-        default: return 0;
-    }
-}
-
 function get_weekday_from_day_name($day_name) {
     if ($day_name == null) return 0;
     $day_name = strtolower($day_name);

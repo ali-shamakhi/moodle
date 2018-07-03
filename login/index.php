@@ -30,6 +30,7 @@ require_once('lib.php');
 redirect_if_major_upgrade_required();
 
 $testsession = optional_param('testsession', 0, PARAM_INT); // test session works properly
+$oauth       = optional_param('oauth', 0, PARAM_INT); // test session works properly
 $anchor      = optional_param('anchor', '', PARAM_RAW);      // Used to restore hash anchor to wantsurl.
 
 $context = context_system::instance();
@@ -49,6 +50,16 @@ try {
     // nothing
 }
 
+if ($oauth && isset($USER->id) && $USER->id > 0 && isset($redirect_url) && trim($redirect_url) != "") {
+    $encodedurl = preg_replace("/\&(?![a-zA-Z0-9#]{1,8};)/", "&amp;", $redirect_url);
+    $encodedurl = preg_replace('/^.*href="([^"]*)".*$/', "\\1", clean_text('<a href="'.$encodedurl.'" />', FORMAT_HTML));
+    @header($_SERVER['SERVER_PROTOCOL'] . ' 303 See Other');
+    @header('Location: '.$redirect_url);
+    header('token: '.get_access_token($DB, $USER, 'attendance'));
+    echo bootstrap_renderer::plain_redirect_message($encodedurl);
+    exit;
+}
+
 // login page requested session test
 if ($testsession) {
     if ($testsession == $USER->id) {
@@ -58,7 +69,18 @@ if ($testsession) {
             $urltogo = $CFG->wwwroot.'/';
         }
         unset($SESSION->wantsurl);
-        redirect($urltogo);
+        error_log('RD1');
+        if ($oauth && isset($USER->id) && $USER->id > 0) {
+            $encodedurl = preg_replace("/\&(?![a-zA-Z0-9#]{1,8};)/", "&amp;", $urltogo);
+            $encodedurl = preg_replace('/^.*href="([^"]*)".*$/', "\\1", clean_text('<a href="'.$encodedurl.'" />', FORMAT_HTML));
+            @header($_SERVER['SERVER_PROTOCOL'] . ' 303 See Other');
+            @header('Location: '.$urltogo);
+            header('token: '.get_access_token($DB, $USER, 'attendance'));
+            echo bootstrap_renderer::plain_redirect_message($encodedurl);
+            exit;
+        }
+        else
+            redirect($urltogo);
     } else {
         // TODO: try to find out what is the exact reason why sessions do not work
         $errormsg = get_string("cookiesnotenabled");
@@ -251,7 +273,13 @@ if ($frm and isset($frm->username)) {                             // Login WITH 
 
         // test the session actually works by redirecting to self
         $SESSION->wantsurl = $urltogo;
-        redirect(new moodle_url(get_login_url(), array('testsession'=>$USER->id)));
+        error_log('RD2');
+        if ($oauth) {
+            $url_params = array('testsession'=>$USER->id, 'oauth'=>1);
+        } else {
+            $url_params = array('testsession'=>$USER->id);
+        }
+        redirect(new moodle_url(get_login_url(), $url_params));
 
     } else {
         if (empty($errormsg)) {
@@ -273,11 +301,13 @@ if ($session_has_timed_out and !data_submitted()) {
 
 /// First, let's remember where the user was trying to get to before they got here
 
+$oauth = false;
 if (empty($SESSION->wantsurl)) {
     $SESSION->wantsurl = null;
     $referer = null;
     if ($redirect_url != null && trim($redirect_url) != "") {
         $referer = $redirect_url;
+        $oauth = true;
     } else {
         $referer = get_local_referer(false);
     }
@@ -307,6 +337,7 @@ if (!empty($CFG->alternateloginurl)) {
         $loginurl->param('errorcode', $errorcode);
     }
 
+    error_log('RD3');
     redirect($loginurl->out(false));
 }
 
@@ -341,6 +372,7 @@ if (!empty($SESSION->loginerrormsg)) {
     if ($errormsg) {
         $SESSION->loginerrormsg = $errormsg;
     }
+    error_log('RD4');
     redirect(new moodle_url('/login/index.php'));
 }
 

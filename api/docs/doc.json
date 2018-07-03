@@ -15,8 +15,7 @@
                 "tags": [
                     "Authentication"
                 ],
-                "summary": "Authenticate and get access token.",
-                "description": "Valid access_domain values are:\r\n\"attendance\"\r\n",
+                "summary": "Get login_url",
                 "consumes": [
                     "application/json"
                 ],
@@ -202,21 +201,11 @@
                     "description": "",
                     "type": "string",
                     "example": "{DOMAIN}/attendance/"
-                },
-                "access_domain": {
-                    "description": "",
-                    "type": "string",
-                    "example": "attendance"
                 }
             }
         },
         "AuthenticateResponse": {
             "properties": {
-                "access_token": {
-                    "description": "If null, user is not logged in.",
-                    "type": "string",
-                    "example": "72d07ca72eaa1ee6848113d0b5a305ab"
-                },
                 "login_url": {
                     "description": "",
                     "type": "string",
