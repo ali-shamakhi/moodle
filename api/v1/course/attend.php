@@ -15,6 +15,7 @@ require_once($CFG->dirroot . '/course/modlib.php');
 require_once($CFG->dirroot.'/user/renderer.php');
 require_once($CFG->dirroot.'/grade/lib.php');
 require_once($CFG->dirroot.'/grade/report/grader/lib.php');
+require_once($CFG->dirroot.'/mod/assign/lib.php');
 
 require_once('../../util.php');
 
@@ -124,6 +125,11 @@ if (!isset($gtree_obj->children)) {
     die;
 }
 
+$students_ids = array();
+foreach (get_role_users(5, $course_context) as $student) {
+    array_push($students_ids, $student->id);
+}
+
 $attendance_category_id = null;
 foreach ($gtree_obj->children as $grade_item) {
     if ($grade_item->type == 'category' && isset($grade_item->name) && strtolower($grade_item->name) == 'attendance') {
@@ -150,60 +156,7 @@ try {
     $attendance_record = $DB->get_record_sql('SELECT * FROM {assign} 
  WHERE name LIKE "Attendance %" AND course = ? AND allowsubmissionsfromdate = ?', array($course_id, $session_start_timestamp), MUST_EXIST);
 } catch (dml_exception $dml_ex) {
-    $assign_data = new stdClass;
-    $assign_data->coursemodule = 0;
-    $assign_data->section = 0;
-    $assign_data->module = 1;  // assign
-    $assign_data->modulename = 'assign';
-    $assign_data->instance = 0;
-    $assign_data->add = 'assign';
-    $assign_data->update = 0;
-    $assign_data->return = 0;
-    $assign_data->sr = 0;
-    $assign_data->groupmode = 0;
-    $assign_data->availabilityconditionsjson = '{"op":"&","c":[],"showc":[]}';
-    error_log($local_date_string);
-    $assign_data->name = 'Attendance '.$local_date_string;
-    $assign_data->course = $course_id;
-    $assign_data->intro = '';                  // HIDDEN!
-    $assign_data->introformat = FORMAT_HTML;   // HIDDEN!
-    $assign_data->showdescription = 0;
-    $assign_data->alwaysshowdescription = 1;
-    $assign_data->nosubmissions = 1;           // HIDDEN!
-    $assign_data->assignsubmission_comments_enabled = 1;
-    $assign_data->assignfeedback_comments_enabled = 1;
-    $assign_data->assignfeedback_comments_commentinline = 0;
-    $assign_data->submissiondrafts = 0;
-    $assign_data->requiresubmissionstatement = 0;
-    $assign_data->attemptreopenmethod = 'none';
-    $assign_data->sendnotifications = 0;
-    $assign_data->sendlatenotifications = 0;
-    $assign_data->sendstudentnotifications = 1;
-    $assign_data->allowsubmissionsfromdate = $session_start_timestamp;
-    $assign_data->duedate = $session_end_timestamp;
-    $assign_data->cutoffdate = 0;
-    $assign_data->gradingduedate = 0;
-    $assign_data->grade = 1;
-    $assign_data->advancedgradingmethod_submissions = '';
-    $assign_data->gradecat = $attendance_category_id;
-    $assign_data->gradepass = 1.0;
-    $assign_data->completionunlocked = 1;
-    $assign_data->completionsubmit = 1;
-    $assign_data->completion = 0;
-    $assign_data->completionexpected = 0;
-    $assign_data->tags = array();
-    $assign_data->teamsubmission = 0;
-    $assign_data->preventsubmissionnotingroup = 0;
-    $assign_data->requireallteammemberssubmit = 0;
-    $assign_data->blindmarking = 0;
-    $assign_data->revealidentities = 0;        // HIDDEN!
-    $assign_data->maxattempts = -1;
-    $assign_data->markingworkflow = 0;
-    $assign_data->markingallocation = 0;
-    $assign_data->visible = 1;
-    $assign_data->visibleoncoursepage = 1;
-    $assign_data->cmidnumber = '';
-    $assign_data->competency_rule = 0;
+    $assign_data = get_attendance_assign_data($course_id, $attendance_category_id, $session_start_timestamp, $session_end_timestamp, $local_date_string);
     try {
         $attendance_moduleinfo = add_moduleinfo($assign_data, get_course($course_id));
     } catch (dml_exception $e) {
@@ -229,6 +182,49 @@ if (!isset($attendance_record) || !isset($attendance_record->id)) {
 }
 
 // TODO: grade students
+foreach ($students_ids as $sid) {
+    $grade = new stdClass;
+    $grade->userid = $sid;
+    $grade->assignment = $attendance_record->id;
+    $grade->grade = (in_array($sid, $attend_students) ? 1.0 : 0.0);
+
+    $grade_added = false;
+    $grade_record = $DB->get_record('assign_grades', array('userid'=>$grade->userid, 'assignment'=>$grade->assignment));
+    if ($grade_record) {
+        $grade->id = $grade_record->id;
+        $grade_added = $DB->update_record('assign_grades', $grade);
+    } else {
+        $grade->timecreated = $current_timestamp;
+        $grade->timemodified = $current_timestamp;
+        $grade->grader = $userid_accessdomain->userid;
+        $grade->locked = 0;
+        $grade->mailed = 0;
+        $grade_added = $DB->insert_record('assign_grades', $grade);
+    }
+
+    if ($grade_added) {
+        $gradebook_grade = new stdClass;
+        $gradebook_grade->userid   = $grade->userid;
+        $gradebook_grade->rawgrade = $grade->grade;
+        $gradebook_grade->usermodified = $grade->grader;
+        $gradebook_grade->datesubmitted = NULL;
+        $gradebook_grade->dategraded = $grade->timemodified;
+        $gradebook_grade->feedbackformat = 0;
+        $gradebook_grade->feedback = '';
+
+//        $agi = clone $attendance_record;
+        $attendance_record->cmidnumber = '';  // TODO: check $this->get_course_module()->idnumber;
+        $attendance_record->gradefeedbackenabled = true;  //$this->is_gradebook_feedback_enabled();
+
+        $grade_successful = assign_grade_item_update($attendance_record, $gradebook_grade) == GRADE_UPDATE_OK;
+
+        if (!$grade_successful) {
+            error_log('ERR . assign_grade_item_update');
+        }
+    } else {
+        error_log('ERR . grade not added');
+    }
+}
 
 $result = new CourseAttendResponse(null);
 

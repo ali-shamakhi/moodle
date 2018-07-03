@@ -94,7 +94,7 @@ foreach (get_role_users(4, $course_context) as $teacher) {
 }
 foreach (get_role_users(5, $course_context) as $student) {
     array_push($students_details, new StudentDetails($student->id, $student->firstname.' '.$teacher->lastname,
-        new moodle_url('/user/pix.php/'.$student->id.'/f1.jpg'), rand(0,5)));
+        'http://localhost/moodle/user/pix.php/'.$student->id.'/f1.jpg', rand(0,5)));    // TODO: generify
 }
 
 // TODO: check user privileges
@@ -103,8 +103,9 @@ $session_timestamps = get_course_session_timestamps($course->summary, $current_t
 $session_start_timestamp = $session_timestamps->start;
 $session_end_timestamp = $session_timestamps->end;
 
-// TODO: complete implementation
-$course_details = new CourseDetailsResponse(null, $course_id, $session_start_timestamp, $session_end_timestamp, rand(0, 10), $teachers_names, $students_details);
+$past_attendance_count = $DB->count_records_sql('SELECT COUNT(id) FROM {assign} WHERE course = '.$course_id.' AND `name` LIKE "Attendance %"');
+
+$course_details = new CourseDetailsResponse(null, $course_id, $session_start_timestamp, $session_end_timestamp, $past_attendance_count, $teachers_names, $students_details);
 
 echo json_encode($course_details);
 

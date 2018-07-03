@@ -394,3 +394,88 @@ function core_login_pre_signup_requests() {
         }
     }
 }
+
+// definitions of valid access domains
+const ATDOM = 'ATDOM_';
+const ATIME = 'ATIME_'; // prefix of const defining max seconds that an access token is valid after last access
+const ATSEC = 'ATSEC_'; // token secret
+
+function get_access_domain_valid_seconds(string $access_domain) {
+    switch ($access_domain) {
+        case 'attendance': return (int)(6 * 60 * 60);
+        default: return 0;
+    }
+}
+
+define('ATDOM_attendance', 1, true);
+define('ATIME_attendance', get_access_domain_valid_seconds('attendance'), true);
+define('ATSEC_attendance', 'HSqIO6X%%kTwHVLrp@sak2%EmMeKqM=A', true);
+
+function get_access_token(moodle_database $DB, $USER, string $access_domain) {
+
+    $access_domain_const = ATDOM.$access_domain;
+    $access_time_const = ATIME.$access_domain;
+    $access_secret_const = ATSEC.$access_domain;
+
+    if(!defined($access_domain_const)) {
+        error_log('access_domain="'.$access_domain.'" is unknown');
+    }
+
+// ... all parameters verified above
+
+    $current_timestamp = time();
+
+    $dbman = $DB->get_manager();
+
+// create auth_table properties
+    $auth_table = new xmldb_table('auth');
+
+    $auth_table->add_field('id', XMLDB_TYPE_INTEGER, '10', null, XMLDB_NOTNULL, XMLDB_SEQUENCE, null);
+    $auth_table->add_field('userid', XMLDB_TYPE_INTEGER, '10', null, XMLDB_NOTNULL, null, null);
+    $auth_table->add_field('accessdomain', XMLDB_TYPE_INTEGER, '4', null, XMLDB_NOTNULL, null, null);
+    $auth_table->add_field('token', XMLDB_TYPE_CHAR, '32', null, XMLDB_NOTNULL, null, null);
+    $auth_table->add_field('accesseddate', XMLDB_TYPE_INTEGER, '10', null, XMLDB_NOTNULL, null, null);
+
+    $auth_table->add_key('primary', XMLDB_KEY_PRIMARY, array('id'));
+    $auth_table->add_key('useraccessdomain', XMLDB_KEY_UNIQUE, array('userid', 'accessdomain'));
+    $auth_table->add_key('token', XMLDB_KEY_UNIQUE, array('token'));
+    $auth_table->add_key('userid', XMLDB_KEY_FOREIGN, array('userid'), 'user', array('id'));
+
+// verify that auth table exists
+    if(!$dbman->table_exists($auth_table)) {
+        $dbman->create_table($auth_table);
+    }
+
+// create or update user's access token
+    $auth_record = null;
+    $access_token = null;
+    try {
+        $auth_record = $DB->get_record('auth', array('userid'=>$USER->id, 'accessdomain'=>constant($access_domain_const)), '*', MUST_EXIST);
+        if ($current_timestamp - $auth_record->accesseddate >= constant($access_time_const))
+            $access_token = md5($USER->username.constant($access_secret_const).$USER->password.strval($current_timestamp));
+        else
+            $access_token = $auth_record->token;
+        $auth_record_new = new stdClass;
+        $auth_record_new->id = $auth_record->id;
+        $auth_record_new->token = $access_token;
+        $auth_record_new->accesseddate = $current_timestamp;
+        $DB->update_record('auth', $auth_record_new);
+    } catch (dml_exception $dml_ex) {
+        // no token found in DB
+        $auth_record = new stdClass;
+        $auth_record->userid = $USER->id;
+        $auth_record->accessdomain = constant($access_domain_const);
+        $access_token = md5($USER->username.constant($access_secret_const).$USER->password.strval($current_timestamp));
+        $auth_record->token = $access_token;
+        $auth_record->accesseddate = $current_timestamp;
+        // insert new record, and verify unique token inserted
+        while(!$DB->insert_record('auth', $auth_record, false)) {
+            $current_timestamp = time();
+            $access_token = md5(strval($current_timestamp*rand(1,1000)).$USER->username.constant($access_secret_const).$USER->password);
+            $auth_record->token = $access_token;
+        }
+    }
+
+    error_log('GAT: '.$access_token);
+    return $access_token;
+}
