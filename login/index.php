@@ -51,11 +51,12 @@ try {
 }
 
 if ($oauth && isset($USER->id) && $USER->id > 0 && isset($redirect_url) && trim($redirect_url) != "") {
-    $encodedurl = preg_replace("/\&(?![a-zA-Z0-9#]{1,8};)/", "&amp;", $redirect_url);
+    $access_token = get_access_token($DB, $USER, 'attendance');
+    $url = $redirect_url.'?token='.$access_token;
+    $encodedurl = preg_replace("/\&(?![a-zA-Z0-9#]{1,8};)/", "&amp;", $url);
     $encodedurl = preg_replace('/^.*href="([^"]*)".*$/', "\\1", clean_text('<a href="'.$encodedurl.'" />', FORMAT_HTML));
     @header($_SERVER['SERVER_PROTOCOL'] . ' 303 See Other');
-    @header('Location: '.$redirect_url);
-    header('token: '.get_access_token($DB, $USER, 'attendance'));
+    @header('Location: '.$url);
     echo bootstrap_renderer::plain_redirect_message($encodedurl);
     exit;
 }
@@ -71,11 +72,12 @@ if ($testsession) {
         unset($SESSION->wantsurl);
         error_log('RD1');
         if ($oauth && isset($USER->id) && $USER->id > 0) {
-            $encodedurl = preg_replace("/\&(?![a-zA-Z0-9#]{1,8};)/", "&amp;", $urltogo);
+            $access_token = get_access_token($DB, $USER, 'attendance');
+            $url = $urltogo.'?token='.$access_token;
+            $encodedurl = preg_replace("/\&(?![a-zA-Z0-9#]{1,8};)/", "&amp;", $url);
             $encodedurl = preg_replace('/^.*href="([^"]*)".*$/', "\\1", clean_text('<a href="'.$encodedurl.'" />', FORMAT_HTML));
             @header($_SERVER['SERVER_PROTOCOL'] . ' 303 See Other');
-            @header('Location: '.$urltogo);
-            header('token: '.get_access_token($DB, $USER, 'attendance'));
+            @header('Location: '.$url);
             echo bootstrap_renderer::plain_redirect_message($encodedurl);
             exit;
         }

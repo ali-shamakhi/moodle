@@ -2825,6 +2825,7 @@ function redirect($url, $message='', $delay=null, $messagetype = \core\output\no
     // because they do not support all valid external URLs.
     $url = preg_replace('/[\x00-\x1F\x7F]/', '', $url);
     $url = str_replace('"', '%22', $url);
+    // TODO: see
     $encodedurl = preg_replace("/\&(?![a-zA-Z0-9#]{1,8};)/", "&amp;", $url);
     $encodedurl = preg_replace('/^.*href="([^"]*)".*$/', "\\1", clean_text('<a href="'.$encodedurl.'" />', FORMAT_HTML));
     $url = str_replace('&amp;', '&', $encodedurl);
@@ -2852,6 +2853,7 @@ function redirect($url, $message='', $delay=null, $messagetype = \core\output\no
     \core\session\manager::write_close();
 
     if ($delay == 0 && !$debugdisableredirect && !headers_sent()) {
+        // TODO: see
         // 302 might not work for POST requests, 303 is ignored by obsolete clients.
         @header($_SERVER['SERVER_PROTOCOL'] . ' 303 See Other');
         @header('Location: '.$url);
