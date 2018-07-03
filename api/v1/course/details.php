@@ -7,6 +7,7 @@ if (!file_exists('../../../config.php')) {
 
 require_once('../../../config.php');
 require_once($CFG->dirroot .'/course/lib.php');
+require_once($CFG->dirroot .'/login/lib.php');
 require_once($CFG->libdir .'/filelib.php');
 
 require_once('../../util.php');
@@ -83,6 +84,25 @@ try {
     die;
 }
 
+$attendance_record = null;
+try {
+    $attendance_record = $DB->get_record_sql('SELECT * FROM {assign} 
+ WHERE name LIKE "Attendance %" AND course = ? AND allowsubmissionsfromdate = ?', array($course_id, $session_start_timestamp), MUST_EXIST);
+} catch (dml_exception $dml_ex) {
+//    $assign_data = get_attendance_assign_data($course_id, $attendance_category_id, $session_start_timestamp, $session_end_timestamp, $local_date_string);
+//    try {
+//        $attendance_moduleinfo = add_moduleinfo($assign_data, get_course($course_id));
+//    } catch (dml_exception $e) {
+//        http_response_code(500);
+//        echo '{"error": "dml_exception: '.$e->getTraceAsString().'"}';
+//        die;
+//    } catch (moodle_exception $e) {
+//        http_response_code(500);
+//        echo '{"error": "moodle_exception: '.$e->getTraceAsString().'"}';
+//        die;
+//    }
+}
+
 $course_context = context_course::instance($course->id);
 $teachers_names = array();
 $students_details = array();
@@ -93,8 +113,10 @@ foreach (get_role_users(4, $course_context) as $teacher) {
     array_push($teachers_names, $teacher->firstname.' '.$teacher->lastname);
 }
 foreach (get_role_users(5, $course_context) as $student) {
+    $absence_count = (isset($attendance_record) ? $DB->count_records_sql('SELECT COUNT(id) FROM {assign_grades} 
+ WHERE assignment = '.$attendance_record->id.' AND userid = '.$student->id.' AND grade < 0.99') : 0);
     array_push($students_details, new StudentDetails($student->id, $student->firstname.' '.$teacher->lastname,
-        'http://localhost/moodle/user/pix.php/'.$student->id.'/f1.jpg', rand(0,5)));    // TODO: generify
+        'http://localhost/moodle/user/pix.php/'.$student->id.'/f1.jpg', $absence_count));
 }
 
 // TODO: check user privileges
