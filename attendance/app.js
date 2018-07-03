@@ -1,6 +1,6 @@
 var express = require('express');
-// var io = require('socket.io');
-// var http = require('http');
+var io = require('socket.io');
+var http = require('http');
 var redis = require('redis');
 var bodyParser = require('body-parser');
 var cookieParser = require('cookie-parser');
@@ -8,15 +8,11 @@ var browser = require('browser-cookies');
 var axios = require('axios');
 
 // // server
-// var app = express();
-// var server = http.createServer(app);
+var app = express();
+var server = http.createServer(app);
 
 // //socket.io
-// var listener = io.listen(server);
-
-var app = require('express')();
-var http = require('http').Server(app);
-var listener = require('socket.io')(http);
+var listener = io.listen(server);
 
 // redis client
 var client = redis.createClient();
@@ -80,7 +76,7 @@ app.get('/test4', function (req, res) {
     }
 });
 app.get('/student', function (req, res) {
-    
+    console.log('student');
     var coursesss = [];
     
     // res.cookie('attendance', 1234); // cookieOptions is optional
@@ -151,7 +147,7 @@ app.get('/teacher', function (req, res) {
     } else {
         var token = req.cookies.attendance;
         if (token === undefined) {
-            getAuthenticateStatus('/student', function (res, url) {
+            getAuthenticateStatus('/teacher', function (res, url) {
                 console.log(url)
                 res.redirect(url);
             }, res);
