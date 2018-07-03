@@ -15,6 +15,7 @@ require_once($CFG->dirroot . '/course/modlib.php');
 require_once($CFG->dirroot.'/user/renderer.php');
 require_once($CFG->dirroot.'/grade/lib.php');
 require_once($CFG->dirroot.'/grade/report/grader/lib.php');
+require_once($CFG->dirroot.'/mod/assign/lib.php');
 
 require_once('../../util.php');
 
@@ -124,6 +125,11 @@ if (!isset($gtree_obj->children)) {
     die;
 }
 
+$students_ids = array();
+foreach (get_role_users(5, $course_context) as $student) {
+    array_push($students_ids, $student->id);
+}
+
 $attendance_category_id = null;
 foreach ($gtree_obj->children as $grade_item) {
     if ($grade_item->type == 'category' && isset($grade_item->name) && strtolower($grade_item->name) == 'attendance') {
@@ -229,6 +235,49 @@ if (!isset($attendance_record) || !isset($attendance_record->id)) {
 }
 
 // TODO: grade students
+foreach ($students_ids as $sid) {
+    $grade = new stdClass;
+    $grade->userid = $sid;
+    $grade->assignment = $attendance_record->id;
+    $grade->grade = (in_array($sid, $attend_students) ? 1.0 : 0.0);
+
+    $grade_added = false;
+    $grade_record = $DB->get_record('assign_grades', array('userid'=>$grade->userid, 'assignment'=>$grade->assignment));
+    if ($grade_record) {
+        $grade->id = $grade_record->id;
+        $grade_added = $DB->update_record('assign_grades', $grade);
+    } else {
+        $grade->timecreated = $current_timestamp;
+        $grade->timemodified = $current_timestamp;
+        $grade->grader = $userid_accessdomain->userid;
+        $grade->locked = 0;
+        $grade->mailed = 0;
+        $grade_added = $DB->insert_record('assign_grades', $grade);
+    }
+
+    if ($grade_added) {
+        $gradebook_grade = new stdClass;
+        $gradebook_grade->userid   = $grade->userid;
+        $gradebook_grade->rawgrade = $grade->grade;
+        $gradebook_grade->usermodified = $grade->grader;
+        $gradebook_grade->datesubmitted = NULL;
+        $gradebook_grade->dategraded = $grade->timemodified;
+        $gradebook_grade->feedbackformat = 0;
+        $gradebook_grade->feedback = '';
+
+//        $agi = clone $attendance_record;
+        $attendance_record->cmidnumber = '';  // TODO: check $this->get_course_module()->idnumber;
+        $attendance_record->gradefeedbackenabled = true;  //$this->is_gradebook_feedback_enabled();
+
+        $grade_successful = assign_grade_item_update($attendance_record, $gradebook_grade) == GRADE_UPDATE_OK;
+
+        if (!$grade_successful) {
+            error_log('ERR . assign_grade_item_update');
+        }
+    } else {
+        error_log('ERR . grade not added');
+    }
+}
 
 $result = new CourseAttendResponse(null);
 
