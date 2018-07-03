@@ -7,13 +7,17 @@ var cookieParser = require('cookie-parser');
 var browser = require('browser-cookies');
 var axios = require('axios');
 
-
+// server
 var app = express();
 var server = http.createServer(app);
+
+//socket.io
 var listener = io.listen(server);
+
+// redis client
 var client = redis.createClient();
 
-app.use(cookieParser('attendance'))
+app.use(cookieParser())
 app.use(bodyParser.urlencoded({
     extended: false
 }))
@@ -22,70 +26,164 @@ app.set('view engine', 'ejs');
 app.set('view options', {
     layout: false
 });
+app.get('/test1', function (req, res) {
+    // res.cookie('attendance', 1234);
+    // console.log(req.cookies)
+    res.clearCookie('attendance')
+    // console.log(req.cookies)
+    var token = req.cookies.attendance;
+    console.log(token)
+    if (token === undefined) {
+        console.log("token is undifined")
+        res.send('token is undifined');
+    } else {
+        res.send(req.cookies.attendance);
+    }
+});
+app.get('/test2', function (req, res) {
+    var header = req.headers;
+    // console.log(header);
 
+    var token = header.token
+    if (token !== undefined) {
+        console.log('token: ', token)
+        res.send(JSON.stringify({
+            token: token,
+        }));
+    } else {
+        console.log('token in undefined')
+        res.send('token in undefined');
+    }
+});
+app.get('/test3', function (req, res) {
+    res.render('teacher', {
+        title: 'test Attendance Page',
+    });
+});
 app.get('/student', function (req, res) {
 
-    var courses = null;
-    var username = null;
-    var token = req.cookies['attendance'];
-    if (token) {
-        courses = retriveClasses(token)
-        username = getUserName();
-        console.log(coourses)
-        console.log(username)
+    var coursesss = [];
+
+    // res.cookie('attendance', 1234); // cookieOptions is optional
+    // res.clearCookie('attendance');
+    var token_header = req.headers.token
+
+    if (token_header !== undefined) {
+        res.cookie('attendance', token_header)
+        retriveClasses(token, function (res, courses) {
+            coursesss = courses;
+            console.dir(courses)
+            getUserName(function (res, name) {
+                console.log('name: ', name)
+                res.render('student', {
+                    title: 'Student Attendance Page',
+                    courses: coursesss,
+                    username: name
+                });
+            });
+        });
     } else {
-        var url = getAuthenticateStatus('/teacher');
-        res.redirect(url);
+        var token = req.cookies.attendance;
+        if (token === undefined) {
+            getAuthenticateStatus('/student', function (res, url) {
+                console.log(url)
+                res.redirect(url);
+            }, res);
+        } else {
+            retriveClasses(token, function (res, courses) {
+                coursesss = courses;
+                console.dir(courses)
+                getUserName(function (res, name) {
+                    console.log('name: ', name)
+                    res.render('student', {
+                        title: 'Student Attendance Page',
+                        courses: coursesss,
+                        username: name
+                    });
+                });
+            });
+        }
     }
-
-
-    res.render('student', {
-        title: 'Student Attendance Page',
-        courses: courses,
-        username: username
-    });
 });
 
 app.get('/teacher', function (req, res) {
-    var courses = null;
-    var username = null;
-    var token = req.cookies['attendance'];
-    if (token === null) {
-        courses = retriveClasses(token)
-        username = getUserName();
-        console.log(coourses)
-        console.log(username)
-    } else {
-        var url = getAuthenticateStatus('/teacher', function (res, url) {
-            console.log(url)
-            res.redirect(url);
-        }, res);
-        // res.redirect(url);
-    }
+    var coursesss = [];
 
-    // res.render('teacher', {
-    //     title: 'Student Attendance Page',
-    //     courses: courses,
-    //     username: username,
-    //     token: token
-    // });
+    // res.cookie('attendance', 1234); // cookieOptions is optional
+    // res.clearCookie('attendance');
+    var token_header = req.headers.token
+
+    if (token_header !== undefined) {
+        res.cookie('attendance', token_header)
+        retriveClasses(token, function (res, courses) {
+            coursesss = courses;
+            console.dir(courses)
+            getUserName(function (res, name) {
+                console.log('name: ', name)
+                res.render('teacher', {
+                    title: 'Teacher Attendance Page',
+                    courses: coursesss,
+                    username: name
+                });
+            });
+        });
+    } else {
+        var token = req.cookies.attendance;
+        if (token === undefined) {
+            getAuthenticateStatus('/student', function (res, url) {
+                console.log(url)
+                res.redirect(url);
+            }, res);
+        } else {
+            retriveClasses(token, function (res, courses) {
+                coursesss = courses;
+                console.dir(courses)
+                getUserName(function (res, name) {
+                    console.log('name: ', name)
+                    res.render('teacher', {
+                        title: 'Teacher Attendance Page',
+                        courses: coursesss,
+                        username: name
+                    });
+                });
+            });
+        }
+    }
 });
 app.get('/mediator', function (req, res) {
-    var token = req.cookies('attendance');
-    axios.get('http://localhost/moodle/api/v1/course/details.php', { //https://jsonplaceholder.typicode.com/users
+
+    // var token = req.cookies.attendance;
+    // var url = 'http://localhost/moodle/api/v1/course/details.php';
+    var url = 'https://jsonplaceholder.typicode.com/users';
+
+    // if (token === undefined) {
+
+    // } else {
+    axios.get(url, {
+        headers: {
+            authorization: token
+        },
         params: {
-            authorization: token,
-            course_id: req.params.course_id
+            course_id: course_id
         }
     }).then(function (response) {
-        console.log('––––detail api response–––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––\n',response.data);
-        res.send(response.data);
-    }).catch
+        return response.data
+    }).catch(function (error) {
+
+    })
+    // }
 });
 
 listener.on('connection', function (socket) {
 
     console.log('Connection to client established');
+
+    socket.on('prof classes', function (data) {
+        listener.emit('prof classes', {
+            name: data.name,
+            student: data.student
+        });
+    });
 
     socket.on('disconnect', function () {
         console.log('Server has disconnected');
@@ -140,28 +238,32 @@ async function getAuthenticateStatus(page, callback, pass) {
         .then(function (response) {
             // console.log('response: ', response.data)
             // console.log('token: \'', response.data.access_token,'\'')
-            var result = null;
-            if (response.data.token == null) {
-                console.log('token is null');
-                console.log('login url: ', response.data.login_url)
-                result = response.data.login_url
-            } else {
-                console.log('token is: ', response.data.access_token);
-                // Set cookie
-                // res.cookie('attendance', response.data.token, cookieOptions) // cookieOptions is optional
-                browser.set('attendance', response.data.access_token)
-                console.log('cookie created successfully');
-                result = redirPage
-            }
-            callback(pass, result)
+            // var result = null;
+            // var token = response.data.access_token;
+            var login_url = response.data.login_url;
+
+            // if (token == null) {
+            //     console.log('token: ', token);
+            //     console.log('login url: ', login_url)
+            //     result = login_url
+            // } else {
+            //     console.log('token is: ', token);
+            //     // Set cookie
+            //     var cookieOptions = {}
+            //     res.cookie('attendance', token, cookieOptions) // cookieOptions is optional
+            //     browser.set('attendance', token)
+            //     console.log('cookie created successfully');
+            //     result = redirPage
+            // }
+            callback(pass, login_url)
         }).catch(function (error) {
             console.log('____________________________________________________________ERROR')
             console.log('error: ', error);
             callback(pass, '/error')
         });
 }
-async function retriveClasses(token) {
-    var courses = null;
+async function retriveClasses(token, callback) {
+    var courses = [];
     await axios.get('http://localhost/moodle/api/v1/courses.php', {
             params: {
                 token: token
@@ -169,6 +271,8 @@ async function retriveClasses(token) {
         })
         .then(function (response) {
             console.log(response.data);
+            var teachers_courses = response.data.teacher_courses
+            var student_courses = response.data.student_courses
             if (teachers_courses == null) {
                 courses = response.student_courses;
             } else {
@@ -179,28 +283,14 @@ async function retriveClasses(token) {
             console.log(error);
         });
 
-    return courses;
+    callback(courses);
 }
-async function getUserName() {
+async function getUserName(callback) {
     await axios.get('http://localhost/moodle/api/v1/user/details.php', {})
         .then(function (response) {
             console.log(response.data)
-            return response.data.full_name
+            callback(response.data.full_name);
         });
-}
-
-function getCourseDetail(token, course_id) {
-    var url = 'http://localhost/moodle/api/v1/course/details.php';
-    axios.get(url, {
-        headers: {
-            'authorization': token
-        },
-        params: {
-            course_id: course_id
-        }
-    }).then(function (response) {
-        return response.data
-    })
 }
 
 function getToken() {

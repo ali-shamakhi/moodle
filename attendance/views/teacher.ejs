@@ -33,10 +33,8 @@
             padding: 10px;
         }
     </style>
-    <script src="/socket.io/socket.io.js"></script>
-    <!-- <script src=></script> -->
-    <script src="js/jquery.min.js"></script>
-
+    <script src="./js/socket.io.js"></script>
+    <script src="https://code.jquery.com/jquery-1.11.1.js"></script>
     <script>
         var socket = io.connect('http://localhost:8080');
 
@@ -48,13 +46,19 @@
         function startAttendance() {
             $('#classAttendanceSetting').modal('toggle');
             console.log('–––––––––––Attendance starting!–––––––––––––');
-            
+
             socket.emit('attendance', {
                 name: "PROF" + $('#course-name').val(),
                 prof: $('#course-prof').val(),
                 absence: $('#course-absence').val(),
             });
             console.log('–––Attend request send to Students')
+        }
+
+        function detailsAPICall() {
+            $.get('/mediator', function (data, status) {
+                alert("Data: " + data + "\nStatus: " + status);
+            });
         }
 
         function removeCard() {
@@ -78,17 +82,6 @@
         $(function () {
             var socket = io();
 
-            socket.emit('login', {
-                login: 'check'
-            });
-            socket.on('login', function (data) {
-                
-            });
-            socket.emit('student of class', {
-                    name: $('#class-name').val(),
-                    students: $('#class-students').val(),
-                });
-
             $('#studentform').submit(function () {
                 socket.emit('attendance', {
                     name: "PROF" + $('#course-name').val(),
@@ -97,8 +90,9 @@
                 });
                 return false;
             });
-            
+
             $('#classform').submit(function () {
+                console.log('#classform')
                 socket.emit('prof classes', {
                     name: $('#class-name').val(),
                     students: $('#class-students').val(),
@@ -200,7 +194,6 @@
                     )
                 }
             });
-            $.get('/kooft', )
             // <div class="col-lg-3 col-md-4 col-sm-6">
             //         <div class="card-img">
             //             <div class="wrapper">
@@ -242,7 +235,7 @@
                     <div class="modal-footer ltr">
                         <button type="button" class="btn btn-secondary" data-dismiss="modal">بازگشت</button>
                         <span></span>
-                        <button type="button" class="btn btn-primary" onclick="startAttendance()">شروع</button>
+                        <button type="button" class="btn btn-primary" onclick="detailsAPICall()">شروع</button>
                     </div>
                 </div>
             </div>
@@ -310,6 +303,15 @@
 
         <script type="text/javascript" src="js/bootstrap.min.js"></script>
     </div>
+    <!-- <script src="./js/socket.io.js"></script>
+    <script src="https://code.jquery.com/jquery-1.11.1.js"></script> -->
+    <!-- <script>
+        var socket = io.connect('http://localhost:8080');
+
+        socket.on('connect', function () {
+            console.log('Client has connected to the server!');
+        });
+    </script> -->
 </body>
 
 
