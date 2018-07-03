@@ -6,6 +6,7 @@ var bodyParser = require('body-parser');
 var cookieParser = require('cookie-parser');
 var browser = require('browser-cookies');
 var axios = require('axios');
+var url = require('url');
 
 // // server
 var app = express();
@@ -61,14 +62,13 @@ app.get('/test3', function (req, res) {
     });
 });
 app.get('/test4', function (req, res) {
-    var params = req.params;
-    // console.log(header);
-    
-    var token = params.token
-    if (token !== undefined) {
-        console.log('token: ', token)
+    var tokenQuery = req.query.token
+    console.log(req.query)
+    console.log('tokenQuery: ', tokenQuery)
+    if (tokenQuery !== undefined) {
+        console.log('token: ', tokenQuery)
         res.send(JSON.stringify({
-            token: token,
+            token: tokenQuery,
         }));
     } else {
         console.log('token in undefined')
@@ -76,28 +76,15 @@ app.get('/test4', function (req, res) {
     }
 });
 app.get('/student', function (req, res) {
-    console.log('student');
     var coursesss = [];
     
-    // res.cookie('attendance', 1234); // cookieOptions is optional
-    // res.clearCookie('attendance');
-    var token_header = req.headers.token
-    console.log('token_header: ', token_header)
+    var tokenQuery = req.query.token
+    console.log(req.query)
+    console.log('tokenQuery: ', tokenQuery)
     
-    if (token_header !== undefined) {
-        res.cookie('attendance', token_header)
-        retriveClasses(token, function (res, courses) {
-            coursesss = courses;
-            console.dir(courses)
-            getUserName(function (res, name) {
-                console.log('name: ', name)
-                res.render('student', {
-                    title: 'Student Attendance Page',
-                    courses: coursesss,
-                    username: name
-                });
-            });
-        });
+    if (tokenQuery !== undefined) {
+        res.cookie('attendance', tokenQuery)
+         res.redirect('/student');
     } else {
         var token = req.cookies.attendance;
         console.log('token: ', token)
@@ -126,24 +113,13 @@ app.get('/student', function (req, res) {
 app.get('/teacher', function (req, res) {
     var coursesss = [];
     
-    // res.cookie('attendance', 1234); // cookieOptions is optional
-    // res.clearCookie('attendance');
-    var token_header = req.headers.token
+    var tokenQuery = req.query.token
+    console.log(req.query)
+    console.log('tokenQuery: ', tokenQuery)
     
-    if (token_header !== undefined) {
-        res.cookie('attendance', token_header)
-        retriveClasses(token, function (res, courses) {
-            coursesss = courses;
-            console.dir(courses)
-            getUserName(function (res, name) {
-                console.log('name: ', name)
-                res.render('teacher', {
-                    title: 'Teacher Attendance Page',
-                    courses: coursesss,
-                    username: name
-                });
-            });
-        });
+    if (tokenQuery !== undefined) {
+        res.cookie('attendance', tokenQuery)
+         res.redirect('/teacher');
     } else {
         var token = req.cookies.attendance;
         if (token === undefined) {
