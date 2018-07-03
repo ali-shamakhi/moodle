@@ -1,5 +1,5 @@
 var express = require('express');
-var io = require('socket.io');
+// var io = require('socket.io');
 var http = require('http');
 var redis = require('redis');
 var bodyParser = require('body-parser');
@@ -8,12 +8,16 @@ var browser = require('browser-cookies');
 var axios = require('axios');
 var url = require('url');
 
-// // server
-var app = express();
-var server = http.createServer(app);
+// // // server
+// var app = express();
+// var server = http.Server(app);
 
-// //socket.io
-var listener = io.listen(server);
+// // //socket.io
+// var listener = io.listen(server);
+
+var app = require('express')();
+var http = require('http').Server(app);
+var io = require('socket.io')(http);
 
 // redis client
 var client = redis.createClient();
@@ -97,7 +101,7 @@ app.get('/student', function (req, res) {
             retriveClasses(token, function (res, courses) {
                 coursesss = courses;
                 console.dir(courses)
-                getUserName(function (res, name) {
+                getUserName(token, function (res, name) {
                     console.log('name: ', name)
                     res.render('student', {
                         title: 'Student Attendance Page',
@@ -131,7 +135,7 @@ app.get('/teacher', function (req, res) {
             retriveClasses(token, function (res, courses) {
                 coursesss = courses;
                 console.dir(courses)
-                getUserName(function (res, name) {
+                getUserName(token, function (res, name) {
                     console.log('name: ', name)
                     res.render('teacher', {
                         title: 'Teacher Attendance Page',
@@ -171,12 +175,12 @@ app.get('/mediator', function (req, res) {
     // }
 });
 
-listener.on('connection', function (socket) {
+io.on('connection', function (socket) {
     
     console.log('Connection to client established');
     
     socket.on('prof classes', function (data) {
-        listener.emit('prof classes', {
+        io.emit('prof classes', {
             name: data.name,
             student: data.student
         });
@@ -200,7 +204,7 @@ listener.on('connection', function (socket) {
             client.hgetall("student", function (err, replies) {
                 console.dir(replies)
             })
-            listener.emit('attendance', {
+            io.emit('attendance', {
                 name: data.name,
                 student: data.student,
                 absence: data.absence
@@ -208,7 +212,7 @@ listener.on('connection', function (socket) {
             
         } else if (pIndex > -1) {
             console.log(`prof id: ${name.substring(4)}`)
-            listener.emit('attendance', {
+            io.emit('attendance', {
                 name: data.name,
                 prof: data.prof,
                 absence: data.absence
@@ -282,8 +286,8 @@ async function retriveClasses(token, callback) {
 
 callback(courses);
 }
-async function getUserName(callback) {
-    await axios.get('http://localhost/moodle/api/v1/user/details.php', {})
+async function getUserName(token, callback) {
+    await axios.get('http://localhost/moodle/api/v1/user/details.php', {authorization: token})
     .then(function (response) {
         console.log(response.data)
         callback(response.data.full_name);
@@ -296,4 +300,4 @@ function getToken() {
     return token
 }
 
-app.listen(8080);
+http.listen(8080);
