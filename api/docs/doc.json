@@ -174,11 +174,19 @@
         "/user/details.php": {
             "get": {
                 "tags": [
-                    "Authentication"
+                    "Attendance"
                 ],
                 "summary": "Reports whether user is logged in or not.",
                 "produces": [
                     "application/json"
+                ],
+                "parameters": [
+                    {
+                        "name": "authorization",
+                        "in": "header",
+                        "description": "Access token for authorization",
+                        "type": "string"
+                    }
                 ],
                 "responses": {
                     "200": {

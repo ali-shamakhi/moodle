@@ -72,6 +72,7 @@ if ($testsession) {
         unset($SESSION->wantsurl);
         error_log('RD1');
         if ($oauth && isset($USER->id) && $USER->id > 0) {
+            error_log($USER->id);
             $access_token = get_access_token($DB, $USER, 'attendance');
             $url = $urltogo.'?token='.$access_token;
             $encodedurl = preg_replace("/\&(?![a-zA-Z0-9#]{1,8};)/", "&amp;", $url);
