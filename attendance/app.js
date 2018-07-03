@@ -287,7 +287,7 @@ async function retriveClasses(token, callback) {
 callback(courses);
 }
 async function getUserName(token, callback) {
-    await axios.get('http://localhost/moodle/api/v1/user/details.php', {authorization: token})
+    await axios.get('http://localhost/moodle/api/v1/user/details.php', {headers: {authorization: token}})
     .then(function (response) {
         console.log(response.data)
         callback(response.data.full_name);
