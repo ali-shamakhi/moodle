@@ -50,22 +50,37 @@ app.get('/teacher', function (req, res) {
     var courses = null;
     var username = null;
     var token = req.cookies['attendance'];
-    if (token) {
+    if (token === null) {
         courses = retriveClasses(token)
         username = getUserName();
         console.log(coourses)
         console.log(username)
     } else {
-        var url = getAuthenticateStatus('/teacher');
-        res.redirect(url);
+        var url = getAuthenticateStatus('/teacher', function (res, url) {
+            console.log(url)
+            res.redirect(url);
+        }, res);
+        // res.redirect(url);
     }
 
-    res.render('teacher', {
-        title: 'Student Attendance Page',
-        courses: courses,
-        username: username,
-        token: token
-    });
+    // res.render('teacher', {
+    //     title: 'Student Attendance Page',
+    //     courses: courses,
+    //     username: username,
+    //     token: token
+    // });
+});
+app.get('/mediator', function (req, res) {
+    var token = req.cookies('attendance');
+    axios.get('http://localhost/moodle/api/v1/course/details.php', { //https://jsonplaceholder.typicode.com/users
+        params: {
+            authorization: token,
+            course_id: req.params.course_id
+        }
+    }).then(function (response) {
+        console.log('––––detail api response–––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––\n',response.data);
+        res.send(response.data);
+    }).catch
 });
 
 listener.on('connection', function (socket) {
@@ -115,8 +130,8 @@ function clearCookie(res) {
     res.clearCookie('attendance');
 }
 
-async function getAuthenticateStatus(page) {
-    var redirPage = 'localhost:8080' + page
+async function getAuthenticateStatus(page, callback, pass) {
+    var redirPage = 'http://localhost:8080' + page
     var options = {
         redirect_url: redirPage,
         access_domain: "attendance"
@@ -125,20 +140,24 @@ async function getAuthenticateStatus(page) {
         .then(function (response) {
             // console.log('response: ', response.data)
             // console.log('token: \'', response.data.access_token,'\'')
+            var result = null;
             if (response.data.token == null) {
                 console.log('token is null');
                 console.log('login url: ', response.data.login_url)
-                return response.data.login_url
+                result = response.data.login_url
             } else {
                 console.log('token is: ', response.data.access_token);
                 // Set cookie
                 // res.cookie('attendance', response.data.token, cookieOptions) // cookieOptions is optional
                 browser.set('attendance', response.data.access_token)
                 console.log('cookie created successfully');
-                return redirPage
+                result = redirPage
             }
+            callback(pass, result)
         }).catch(function (error) {
+            console.log('____________________________________________________________ERROR')
             console.log('error: ', error);
+            callback(pass, '/error')
         });
 }
 async function retriveClasses(token) {

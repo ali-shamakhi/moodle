@@ -70,6 +70,7 @@
                 });
                 return false;
             });
+            var classes =
             socket.on('attendance', function (data) {
                 if (data.name.indexOf("PROF") > -1) {
                     $('#coursesList').append(
