@@ -114,14 +114,15 @@ app.get('/student', function (req, res) {
         } else {
             retriveClasses(token, function (courses) {
                 coursesss = JSON.parse(courses)
-                console.log('coursesss: ',coursesss)
+                console.log('student coursesss: ',coursesss)
                 if (coursesss !== undefined) {
-                    getUserName(token, function (name) {
+                    getUserName(token, function (name, id) {
                         console.log('name: ', name)
                         res.render('student', {
                             title: 'Your Attendance Page',
                             courses: coursesss,
-                            username: name
+                            username: name,
+                            user_id: id
                         });
                     });
                 } else {
@@ -163,14 +164,15 @@ app.get('/teacher', function (req, res) {
         } else {
             retriveClasses(token, function (courses) {
                 coursesss = JSON.parse(courses)
-                console.log('coursesss: ',coursesss)
+                console.log('teacher coursesss: ',coursesss)
                 if (coursesss !== undefined) {
-                    getUserName(token, function (name) {
+                    getUserName(token, function (name, id) {
                         console.log('name: ', name)
                         res.render('teacher', {
                             title: 'Student Attendance Page',
                             courses: coursesss,
-                            username: name
+                            username: name,
+                            user_id: id
                         });
                     });
                 } else {
@@ -269,32 +271,28 @@ listener.on('connection', function (socket) {
 
     socket.on('attendance', function (data) {
 
-        var name = data.name
-        var stIndex = name.indexOf("STUDENT")
-        var pIndex = name.indexOf("PROF")
+        var id = data.id
+        var stIndex = id.indexOf("STUDENT");
+        var pIndex = id.indexOf("PROF");
 
 
         if (stIndex > -1) {
-            console.log(`student id: ${name.substring(7)}`)
+            console.log(`student id: ${id.substring(7)}`)
             //hash withh hashname: student, key: data.name, value of: data.absence
-            client.hset("student", name.substring(7), data.absence, redis.print)
+            client.hset("student", id.substring(7), data.absence, redis.print)
             client.hgetall("student", function (err, replies) {
                 console.dir(replies)
             })
             listener.emit('attendance', {
-                name: data.name,
-                student: data.student,
-                absence: data.absence
+                id: id
             });
 
         } else if (pIndex > -1) {
-            console.log(`prof id: ${name.substring(4)}`)
+            console.log(`prof id: ${id.substring(4)}`)
             listener.emit('attendance', {
-                name: data.name,
-                prof: data.prof,
-                absence: data.absence
+                id: id
             });
-            client.hset("prof", name.substring(4), data.absence, redis.print)
+            client.hset("prof", id.substring(4), data.absence, redis.print)
             client.hgetall("prof", function (err, replies) {
                 console.dir(replies)
             })
@@ -354,8 +352,10 @@ async function retriveClasses(token, callback) {
             var teachers_courses = data.teachers_courses
             var student_courses = data.student_courses
             if (teachers_courses.length == 0) {
+                console.log('––––––––––––––––––––––––––––––––student_courses')
                 courses = student_courses;
             } else {
+                console.log('––––––––––––––––––––––––––––––––teachers_courses')
                 courses = teachers_courses;
             }
             console.log('courses: ', courses)
@@ -375,7 +375,7 @@ async function getUserName(token, callback) {
         })
         .then(function (response) {
             console.log(response.data)
-            callback(response.data.full_name);
+            callback(response.data.full_name, response.data.id);
         });
 }
 

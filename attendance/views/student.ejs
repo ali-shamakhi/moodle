@@ -39,26 +39,14 @@
     </script>
     <script src="./js/jquery-1.11.1.js"></script>
     <script>
-        var selectedCard;
-
-        function setSelectedCard(selected) {
-            selectedCard = $(selected)
+        function setSelectedCard() {
+            localStorage.setItem("selectedCard", $(this).id);
+            // localStorage.setItem("selectedCard", $(this).);
         }
 
-        function doAttending() {
-            var socket = io();
-            socket.emit('attendance', {
-                name: "STUDENT" + $('#course-name').val(),
-                student: $('#course-student').val(),
-                absence: $('#course-absence').val(),
-            });
-            console.log('Student Request Sent!')
-            console.log(selectedCard)
-            selectedCard.id.remove();
-            console.log('After Shave!')
-        }
         $(function () {
             var socket = io();
+            
             $('form').submit(function () {
                 socket.emit('attendance', {
                     name: "STUDENT" + $('#course-name').val(),
@@ -67,33 +55,57 @@
                 });
                 return false;
             });
+            $('.course_container').on('click', function () {
+                var id = this.id;
+                console.log('id: ', id)
+                console.log(document.getElementById(id).firstElementChild.firstElementChild);
+                document.getElementById(id).firstElementChild.firstElementChild.classList.add('wrapper-img-blue');
+                document.getElementById(id).firstElementChild.firstElementChild.classList.remove('wrapper-img-grey');
+
+                var student_id = $(".topbar").id
+                console.log('student_id: ', student_id)
+                // socket.emit('attendance', {
+                //     id: student_id
+                // });
+            })
+
             socket.on('attendance', function (data) {
-                $(`#${data.name}`)
-                if (data.name.indexOf("PROF") > -1) {
-                    $('#coursesList').append(
-                        $('<div>').on('click', setSelectedCard($(this))).addClass( //.on("click", removeCard)
-                            'col-lg-4 col-md-6 col-sm-12 ltr').attr({
-                            "id": data.name,
-                            "data-toggle": "modal",
-                            "data-target": "#classAttendancy"
-                        }).append(
-                            $('<div>').addClass("card-img").append(
-                                $('<div>').addClass("wrapper-img-blue").append(
-                                    $('<div>').addClass("content-img col-md-7").append(
-                                        $('<h5>').addClass("card-title").text(data.name.substring(4)),
-                                        $('<h6>').addClass("card-title").text(data.prof),
-                                        $('<h6>').addClass("card-title").text(data.absence +
-                                            ' غیبت')
-                                    ),
-                                    $('<div>').addClass("text-center col-md-5").append(
-                                        $('<img>', {
-                                            src: 'img/500x500.png'
-                                        }).addClass('responsive-img')
-                                    )
-                                )
-                            )
-                        )
-                    );
+                
+                var id = data.id
+                console.log('id: ', id)
+                
+                if (id.indexOf("PROF") > -1) {
+                    id = id.substring(4);
+                    console.log('id: ', id)
+                    console.log(document.getElementById(id).firstElementChild.firstElementChild);
+                    document.getElementById(id).firstElementChild.firstElementChild.classList.add('wrapper-img');
+                    document.getElementById(id).firstElementChild.firstElementChild.classList.remove('wrapper-img-blue');
+                    document.getElementById(id).firstElementChild.firstElementChild.classList.remove('wrapper-img-grey');
+
+                    // $('#coursesList').append(
+                    //     $('<div>').on('click', setSelectedCard).addClass( //.on("click", removeCard)
+                    //         'col-lg-4 col-md-6 col-sm-12 ltr').attr({
+                    //         "id": data.course_id,
+                    //         "data-toggle": "modal",
+                    //         "data-target": "#classAttendancy"
+                    //     }).append(
+                    //         $('<div>').addClass("card-img").append(
+                    //             $('<div>').addClass("wrapper-img-blue").append(
+                    //                 $('<div>').addClass("content-img col-md-7").append(
+                    //                     $('<h5>').addClass("card-title").text(data.name.substring(4)),
+                    //                     $('<h6>').addClass("card-title").text(data.prof),
+                    //                     $('<h6>').addClass("card-title").text(data.absence +
+                    //                         ' غیبت')
+                    //                 ),
+                    //                 $('<div>').addClass("text-center col-md-5").append(
+                    //                     $('<img>', {
+                    //                         src: 'img/500x500.png'
+                    //                     }).addClass('responsive-img')
+                    //                 )
+                    //             )
+                    //         )
+                    //     )
+                    // );
                 }
             });
         });
@@ -121,24 +133,24 @@
             </div>
         </div>
         <div class="col-sm-12">
-            <form class="sendform">
+            <!-- <form class="sendform">
                 <input id="course-name" autocomplete="off" placeholder="name" />
                 <input id="course-student" autocomplete="off" placeholder="prof-name" />
                 <input id="course-absence" autocomplete="off" placeholder="absence" />
                 <button>Send</button>
-            </form>
-            <div id="topbar">
+            </form> -->
+            <div class="topbar" id=<%= user_id %> >
                 <h3 id="username" style="text-align: center">خوش آمدید،
                     <%= username %>
                 </h3>
             </div>
             <hr>
             <br>
-            <h3 class="sectionTitle">کلاس های شما</h3>
+            <h3 class="sectionTitle" id=<%= user_id %> >کلاس های شما</h3>
             <hr>
             <div class="row" id="coursesList">
                 <% for(var i=0; i<courses.length; i++) {%>
-                    <div class="col-lg-4 col-md-6 col-sm-12 course-container" data-toggle="modal" data-target="#classAttendancy" id=< %=courses[i].course_id%>>
+                    <div class="col-lg-4 col-md-6 col-sm-12 course_container" data-toggle="modal" data-target="#classAttendancy" id=<%= "course_" + courses[i].course_id %> >
                         <div class="card-img">
                             <div class="wrapper-img-grey">
                                 <div class="content-img col-md-7">
@@ -146,14 +158,14 @@
                                         <%= courses[i].course_name %>
                                     </h5>
                                     <h6 class="card-title">استاد:
-                                        <%= courses[i].teachers_full_names[0] %>
+                                        <%= courses[i].teacher_details[0].full_name %>
                                     </h6>
                                     <h6 class="card-title"> غیبت
                                         <%= courses[i].absence_count %>
                                     </h6>
                                 </div>
                                 <div class="text-center col-md-5">
-                                    <img src="<%= courses[i].pic_url %>" class="responsive-img">
+                                    <img src="<%= courses[i].teacher_details[0].pic_url %>" class="responsive-img">
                                 </div>
                             </div>
                         </div>
@@ -168,7 +180,7 @@
                     myFunction()
                 };
 
-                var topbar = document.getElementById("topbar");
+                var topbar = $(".topbar");
                 var sticky = topbar.offsetTop;
 
                 function myFunction() {
