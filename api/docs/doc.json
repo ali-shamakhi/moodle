@@ -327,10 +327,6 @@
                     "type": "string",
                     "example": "Unknown Error"
                 },
-                "pic_url": {
-                    "description": "First Teacher's picture URL",
-                    "type": "string"
-                },
                 "teachers_courses": {
                     "description": "",
                     "type": "array",
@@ -364,13 +360,11 @@
                     "type": "integer",
                     "example": 3
                 },
-                "teachers_full_names": {
+                "teacher_details": {
                     "description": "",
                     "type": "array",
                     "items": {
-                        "description": "Teacher's Full Name",
-                        "type": "string",
-                        "example": "Ali Shamakhi"
+                        "$ref": "#/definitions/TeacherDetails"
                     }
                 }
             }
@@ -410,6 +404,25 @@
                     "description": "",
                     "type": "string",
                     "example": "Computer Science 3962"
+                },
+                "teacher_details": {
+                    "description": "",
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/TeacherDetails"
+                    }
+                }
+            }
+        },
+        "TeacherDetails": {
+            "properties": {
+                "full_name": {
+                    "description": "",
+                    "type": "string"
+                },
+                "pic_url": {
+                    "description": "",
+                    "type": "string"
                 }
             }
         }

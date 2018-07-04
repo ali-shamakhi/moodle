@@ -103,18 +103,15 @@ error_log(json_encode($mdl_courses));
 
 $teacher_courses = array();
 $student_courses = array();
-unset($teacher_pic_url);
 foreach ($mdl_courses as $course) {
     $course_context = context_course::instance($course->id);
     $user_roles = get_user_roles($course_context, $user_id);
-    $teachers_names = array();
+    $teachers_details = array();
     foreach (get_role_users(3, $course_context) as $teacher) {
-        array_push($teachers_names, $teacher->firstname.' '.$teacher->lastname);
-        if (!isset($teacher_pic_url)) $teacher_pic_url = 'http://localhost/moodle/user/pix.php/'.$teacher->id.'/f1.jpg';
+        array_push($teachers_details, new TeacherDetails($teacher->firstname.' '.$teacher->lastname, 'http://localhost/moodle/user/pix.php/'.$teacher->id.'/f1.jpg'));
     }
     foreach (get_role_users(4, $course_context) as $teacher) {
-        array_push($teachers_names, $teacher->firstname.' '.$teacher->lastname);
-        if (!isset($teacher_pic_url)) $teacher_pic_url = 'http://localhost/moodle/user/pix.php/'.$teacher->id.'/f1.jpg';
+        array_push($teachers_details, new TeacherDetails($teacher->firstname.' '.$teacher->lastname, 'http://localhost/moodle/user/pix.php/'.$teacher->id.'/f1.jpg'));
     }
     $is_teacher = false;
     $is_student = false;
@@ -129,14 +126,14 @@ foreach ($mdl_courses as $course) {
         }
     }
     if ($is_teacher) {
-        array_push($teacher_courses, new TeacherCourse($course->id, $course->fullname));
+        array_push($teacher_courses, new TeacherCourse($course->id, $course->fullname, $teachers_details));
     }
     if ($is_student) {
         // TODO: absence_count
-        array_push($student_courses, new StudentCourse($course->id, $course->fullname, 0, $teachers_names));
+        array_push($student_courses, new StudentCourse($course->id, $course->fullname, 0, $teachers_details));
     }
 }
 
-$courses_response = new CoursesResponse(null, $teacher_pic_url, $teacher_courses, $student_courses);
+$courses_response = new CoursesResponse(null, $teacher_courses, $student_courses);
 
 echo json_encode($courses_response);

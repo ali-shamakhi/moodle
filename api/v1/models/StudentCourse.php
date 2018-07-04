@@ -34,19 +34,17 @@ class StudentCourse
      * @var array
      * @SWG\Property(
      *     @SWG\Items(
-     *         type="string",
-     *         description="Teacher's Full Name",
-     *         example="Ali Shamakhi"
+     *         ref="#/definitions/TeacherDetails"
      *     )
      * )
      */
-    public $teachers_full_names;
+    public $teacher_details;
 
-    public function __construct($course_id, $course_name, $absence_count, $teachers_full_names)
+    public function __construct($course_id, $course_name, $absence_count, $teacher_details)
     {
         $this->course_id = $course_id;
         $this->course_name = $course_name;
         $this->absence_count = $absence_count;
-        $this->teachers_full_names = $teachers_full_names;
+        $this->teacher_details = $teacher_details;
     }
 }

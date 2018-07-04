@@ -16,14 +16,6 @@ class CoursesResponse
     public $error;
 
     /**
-     * @var string
-     * @SWG\Property(
-     *     description="First Teacher's picture URL"
-     * )
-     */
-    public $pic_url;
-
-    /**
      * @var array
      * @SWG\Property(
      *     @SWG\Items(
@@ -43,10 +35,9 @@ class CoursesResponse
      */
     public $student_courses;
 
-    public function __construct($error, $pic_url, $teachers_courses=null, $student_courses=null)
+    public function __construct($error, $teachers_courses=null, $student_courses=null)
     {
         $this->error = $error;
-        $this->pic_url = $pic_url;
         $this->teachers_courses = $teachers_courses;
         $this->student_courses = $student_courses;
     }
