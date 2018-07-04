@@ -43,6 +43,17 @@
     </script>
     <script src="./js/jquery-1.11.1.js"></script>
     <script>
+        var resultsArr = [];
+        <% for (var i=0, len=courses.length; i<len; i++) { %>
+        resultsArr.push(<%- courses[i] %>);
+        <% } %>
+        console.log(resultsArr)
+        for (i in students) {
+            console.log(students[i])
+            addTOClassList(students[i]);
+        }
+    </script>
+    <script>
         $(function () {
             var socket = io.connect('http://localhost:8080');
 
@@ -177,6 +188,24 @@
             //     </div>
         });
 
+        function addTOClassList(data) {
+            $('#classList').append(
+                $('<div>').attr({
+                    "id": data.course_id,
+                    "data-toggle": "modal",
+                    "data-target": "#classAttendanceSetting"
+                }).addClass('col-lg-3 col-md-4 col-sm-6').append(
+                    $('<div>').addClass('card-img').append(
+                        $('<div>').addClass('wrapper').append(
+                            $('<div>').addClass('wrapper-text').append(
+                                $('<h4>').addClass("card-title").text(data.course_name),
+                            )
+                        )
+                    )
+                )
+            )
+        }
+
         function startAttendance() {
             $('#classAttendanceSetting').modal('toggle');
             console.log('–––––––––––Attendance starting!–––––––––––––');
@@ -192,7 +221,9 @@
         function detailsAPICall() {
             var time = $('form-control').val() * 60 * 1000;
 
-            $.post('/mediator',{'time': time}, function (students, status) {
+            $.post('/mediator', {
+                'time': time
+            }, function (students, status) {
                 // console.log(students)
                 if (students.error !== undefined) {
                     console.log('–––––––––––––––––––––––––––––––––––––––datailAPI–error')
