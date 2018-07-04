@@ -69,6 +69,7 @@
             });
             var classes =
                 socket.on('attendance', function (data) {
+                    $(`#${data.name}`)
                     if (data.name.indexOf("PROF") > -1) {
                         $('#coursesList').append(
                             $('<div>').on('click', setSelectedCard($(this))).addClass( //.on("click", removeCard)
