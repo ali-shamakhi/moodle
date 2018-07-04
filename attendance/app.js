@@ -361,7 +361,7 @@ async function retriveClasses(token, callback) {
         })
         .catch(function (error) {
             console.log('___________________________________________________________retriveClasses_ERROR')
-            console.log('error: ', error);
+            console.log('error  : ', error);
         });
 // console.log(courses)
 }
