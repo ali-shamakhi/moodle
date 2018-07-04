@@ -192,7 +192,7 @@
                     "200": {
                         "description": "Details about user login",
                         "schema": {
-                            "$ref": "#/definitions/CheckLoginResponse"
+                            "$ref": "#/definitions/LoginDetailsResponse"
                         }
                     },
                     "default": {

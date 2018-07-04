@@ -36,7 +36,7 @@ header("Content-Type: application/json; charset=UTF-8");
  *      response=200,
  *      description="Details about user login",
  *      @SWG\Schema(
- *          ref="#/definitions/CheckLoginResponse"
+ *          ref="#/definitions/LoginDetailsResponse"
  *      )
  *   ),
  *   @SWG\Response(
