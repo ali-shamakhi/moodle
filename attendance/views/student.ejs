@@ -34,20 +34,17 @@
         }
     </style>
     <script src="/socket.io/socket.io.js"></script>
-    <script src="js/jquery.min.js"></script>
-
     <script>
-        var socket = io.connect('http://localhost:8080');
-
-        socket.on('connect', function () {
-            console.log('Client has connected to the server!');
-        });
+        var socket = io();
     </script>
+    <script src="./js/jquery-1.11.1.js"></script>
     <script>
         var selectedCard;
-        function setSelectedCard(selected){
+
+        function setSelectedCard(selected) {
             selectedCard = $(selected)
         }
+
         function doAttending() {
             var socket = io();
             socket.emit('attendance', {
@@ -71,34 +68,34 @@
                 return false;
             });
             var classes =
-            socket.on('attendance', function (data) {
-                if (data.name.indexOf("PROF") > -1) {
-                    $('#coursesList').append(
-                        $('<div>').on('click', setSelectedCard($(this))).addClass( //.on("click", removeCard)
-                            'col-lg-4 col-md-6 col-sm-12 ltr').attr({
+                socket.on('attendance', function (data) {
+                    if (data.name.indexOf("PROF") > -1) {
+                        $('#coursesList').append(
+                            $('<div>').on('click', setSelectedCard($(this))).addClass( //.on("click", removeCard)
+                                'col-lg-4 col-md-6 col-sm-12 ltr').attr({
                                 "id": data.name,
-                            "data-toggle": "modal",
-                            "data-target": "#classAttendancy"
-                        }).append(
-                            $('<div>').addClass("card-img").append(
-                                $('<div>').addClass("wrapper-img").append(
-                                    $('<div>').addClass("content-img col-md-7").append(
-                                        $('<h5>').addClass("card-title").text(data.name.substring(4)),
-                                        $('<h6>').addClass("card-title").text(data.prof),
-                                        $('<h6>').addClass("card-title").text(data.absence +
-                                            ' غیبت')
-                                    ),
-                                    $('<div>').addClass("text-center col-md-5").append(
-                                        $('<img>', {
-                                            src: 'img/500x500.png'
-                                        }).addClass('responsive-img')
+                                "data-toggle": "modal",
+                                "data-target": "#classAttendancy"
+                            }).append(
+                                $('<div>').addClass("card-img").append(
+                                    $('<div>').addClass("wrapper-img").append(
+                                        $('<div>').addClass("content-img col-md-7").append(
+                                            $('<h5>').addClass("card-title").text(data.name.substring(4)),
+                                            $('<h6>').addClass("card-title").text(data.prof),
+                                            $('<h6>').addClass("card-title").text(data.absence +
+                                                ' غیبت')
+                                        ),
+                                        $('<div>').addClass("text-center col-md-5").append(
+                                            $('<img>', {
+                                                src: 'img/500x500.png'
+                                            }).addClass('responsive-img')
+                                        )
                                     )
                                 )
                             )
-                        )
-                    );
-                }
-            });
+                        );
+                    }
+                });
         });
     </script>
 </head>
@@ -123,16 +120,42 @@
                 </div>
             </div>
         </div>
-        <div class="row" id="coursesList"></div>
         <div class="col-sm-12">
-            <form class="sendform">
-                <input id="course-name" autocomplete="off" placeholder="name" />
-                <input id="course-student" autocomplete="off" placeholder="prof-name" />
-                <input id="course-absence" autocomplete="off" placeholder="absence" />
-                <button>Send</button>
-            </form>
+                <form class="sendform">
+                    <input id="course-name" autocomplete="off" placeholder="name" />
+                    <input id="course-student" autocomplete="off" placeholder="prof-name" />
+                    <input id="course-absence" autocomplete="off" placeholder="absence" />
+                    <button>Send</button>
+                </form>
+            <div id="topbar">
+            <h3 id="username" style="text-align: center">خوش آمدید،
+                <%= username %>
+            </h3>
         </div>
+        <hr>
+        <br>
+        <h3 class="sectionTitle">کلاس های شما</h3>
+        <hr>
+        <div class="row" id="coursesList"></div>
+
         <script type="text/javascript" src="js/bootstrap.min.js"></script>
+        <script>
+            //for sticky topbar
+            window.onscroll = function () {
+                myFunction()
+            };
+
+            var topbar = document.getElementById("topbar");
+            var sticky = topbar.offsetTop;
+
+            function myFunction() {
+                if (window.pageYOffset >= sticky) {
+                    topbar.classList.add("sticky")
+                } else {
+                    topbar.classList.remove("sticky");
+                }
+            }
+        </script>
     </div>
 </body>
 

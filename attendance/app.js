@@ -1,23 +1,30 @@
 var express = require('express');
-// var io = require('socket.io');
+var io = require('socket.io');
 var http = require('http');
 var redis = require('redis');
 var bodyParser = require('body-parser');
 var cookieParser = require('cookie-parser');
 var browser = require('browser-cookies');
 var axios = require('axios');
-var url = require('url');
+var Stopwatch = require('timer-stopwatch');
 
-// // // server
-// var app = express();
-// var server = http.Server(app);
+var port = 8080;
+// server
+var app = express();
+var server = http.createServer(app);
+server.listen(port)
+// socket.io
+var listener = io.listen(server);
 
-// // //socket.io
-// var listener = io.listen(server);
+// var app = require('express')();
+// var http = require('http').Server(app);
+// var io = require('socket.io')(http);
 
-var app = require('express')();
-var http = require('http').Server(app);
-var io = require('socket.io')(http);
+
+
+// http.listen(port, function(){
+//     console.log('listening on *:' + port);
+//   });
 
 // redis client
 var client = redis.createClient();
@@ -34,7 +41,7 @@ app.set('view options', {
 app.get('/test1', function (req, res) {
     // res.cookie('attendance', 1234);
     // console.log(req.cookies)
-    res.clearCookie('attendance')
+    // res.clearCookie('attendance')
     // console.log(req.cookies)
     var token = req.cookies.attendance;
     console.log(token)
@@ -48,7 +55,7 @@ app.get('/test1', function (req, res) {
 app.get('/test2', function (req, res) {
     var header = req.headers;
     // console.log(header);
-    
+
     var token = header.token
     if (token !== undefined) {
         console.log('token: ', token)
@@ -81,16 +88,23 @@ app.get('/test4', function (req, res) {
 });
 app.get('/student', function (req, res) {
     var coursesss = [];
-    
+
+    // clear coockie
+    // res.clearCookie('attendance')
+
     var tokenQuery = req.query.token
-    console.log(req.query)
+    // console.log(req.query)
     console.log('tokenQuery: ', tokenQuery)
-    
+
     if (tokenQuery !== undefined) {
         res.cookie('attendance', tokenQuery)
-         res.redirect('/student');
+        res.redirect('/student');
     } else {
         var token = req.cookies.attendance;
+
+        //clear cookie
+        // res.clearCookie('attendance');
+
         console.log('token: ', token)
         if (token === undefined) {
             getAuthenticateStatus('/student', function (res, url) {
@@ -99,33 +113,46 @@ app.get('/student', function (req, res) {
             }, res);
         } else {
             retriveClasses(token, function (res, courses) {
-                coursesss = courses;
+                coursesss = JSON.stringify(courses);
                 console.dir(courses)
-                getUserName(token, function (res, name) {
-                    console.log('name: ', name)
-                    res.render('student', {
-                        title: 'Student Attendance Page',
-                        courses: coursesss,
-                        username: name
+                if (courses !== undefined) {
+                    getUserName(token, function (res, name) {
+                        console.log('name: ', name)
+                        res.render('student', {
+                            title: 'Student Attendance Page',
+                            courses: coursesss,
+                            username: name
+                        });
                     });
-                });
+                } else {
+                    console.log('\'retriveClasses\' return undifined')
+                }
             });
         }
     }
+
+    // res.render('student', {
+    //     title: 'Student Attendance Page',
+    //     courses: coursesss,
+    //     username: 'مسعود محرمی'
+    // });
 });
 
 app.get('/teacher', function (req, res) {
     var coursesss = [];
-    
+
     var tokenQuery = req.query.token
     console.log(req.query)
     console.log('tokenQuery: ', tokenQuery)
-    
+
     if (tokenQuery !== undefined) {
         res.cookie('attendance', tokenQuery)
-         res.redirect('/teacher');
+        res.redirect('/teacher');
     } else {
         var token = req.cookies.attendance;
+
+        // clear cookie
+        // res.clearCookie('attendance'); 
         if (token === undefined) {
             getAuthenticateStatus('/teacher', function (res, url) {
                 console.log(url)
@@ -133,70 +160,116 @@ app.get('/teacher', function (req, res) {
             }, res);
         } else {
             retriveClasses(token, function (res, courses) {
-                coursesss = courses;
+                coursesss = JSON.stringify(courses);
                 console.dir(courses)
-                getUserName(token, function (res, name) {
-                    console.log('name: ', name)
-                    res.render('teacher', {
-                        title: 'Teacher Attendance Page',
-                        courses: coursesss,
-                        username: name
+                if (courses !== undefined) {
+                    getUserName(token, function (res, name) {
+                        console.log('name: ', name)
+                        res.render('student', {
+                            title: 'Student Attendance Page',
+                            courses: coursesss,
+                            username: name
+                        });
                     });
-                });
+                } else {
+                    console.log('\'retriveClasses\' return undifined')
+                }
             });
         }
     }
-    
+
     // res.render('teacher', {
     //     title: 'Teacher Attendance Page',
+    //     username: 'مسعود محرمی'
     // });
 });
-app.get('/mediator', function (req, res) {
-    
-    // var token = req.cookies.attendance;
-    // var url = 'http://localhost/moodle/api/v1/course/details.php';
-    var url = 'https://jsonplaceholder.typicode.com/users';
-    
-    // if (token === undefined) {
-    
-    // } else {
-    axios.get(url, {
-        headers: {
-            authorization: token
-        },
-        params: {
-            course_id: course_id
+app.post('/mediator', function (req, res) {
+    //check time
+    var time = req.data.time
+
+    console.log(time)
+
+
+    var options = {
+        refreshRateMS: 10, // How often the clock should be updated
+        almostDoneMS: 2000, // When counting down - this event will fire with this many milliseconds remaining on the clock
+    }
+
+    var timer = new Stopwatch(time, options);
+
+    // timer.start();
+
+    timer.onTime(function (time) {
+        console.log(time.ms); // number of milliseconds past (or remaining);
+    });
+
+    timer.onDone(function () {
+        console.log('Timer is complete');
+    });
+
+
+    var token = req.cookies.attendance;
+    var url = 'http://localhost/moodle/api/v1/course/details.php';
+    // var url = 'https://jsonplaceholder.typicode.com/users';
+
+    if (token === undefined) {
+        var error = {
+            'error': 'error'
         }
-    }).then(function (response) {
-        return response.data
-    }).catch(function (error) {
-        
-    })
-    // }
+        res.send(JSON.stringify(error))
+    } else {
+        axios.get(url, {
+            headers: {
+                authorization: token
+            },
+            params: {
+                course_id: course_id
+            }
+        }).then(function (response) {
+            res.send(JSON.stringify(response.data))
+        }).catch(function (error) {
+            console.log('___________________________________________________________mediator_ERROR')
+            // console.log('error: ', error);
+        });
+    }
+
+    // axios.get(url, {}).then(function (response) {
+    //     console.log(response.data)
+    //     res.send(JSON.stringify(response.data))
+    // }).catch(function (error) {
+    //     console.log('___________________________________________________________mediator_ERROR')
+    //     // console.log('error: ', error);
+    // });
+
 });
 
-io.on('connection', function (socket) {
-    
+listener.on('connection', function (socket) {
+    listener.emit('this', {
+        will: 'be received by everyone'
+    });
+
     console.log('Connection to client established');
-    
+    // 
+    socket.on('removedStudent', function (data) {
+        console.log('name: ', JSON.stringify(data.name))
+        console.log('id: ', data.id);
+    })
     socket.on('prof classes', function (data) {
-        io.emit('prof classes', {
-            name: data.name,
-            student: data.student
-        });
+        console.log('recireved data: ', data);
+        listener.emit('prof classes', data);
     });
-    
-    socket.on('disconnect', function () {
-        console.log('Server has disconnected');
-    });
-    
+
+    // socket.on('disconnect', function () {
+    //     console.log('Server has disconnected');
+    // });
+
     socket.on('attendance', function (data) {
-        
+
         var name = data.name
         var stIndex = name.indexOf("STUDENT")
         var pIndex = name.indexOf("PROF")
-        
-        
+
+
         if (stIndex > -1) {
             console.log(`student id: ${name.substring(7)}`)
             //hash withh hashname: student, key: data.name, value of: data.absence
@@ -204,15 +277,15 @@ io.on('connection', function (socket) {
             client.hgetall("student", function (err, replies) {
                 console.dir(replies)
             })
-            io.emit('attendance', {
+            listener.emit('attendance', {
                 name: data.name,
                 student: data.student,
                 absence: data.absence
             });
-            
+
         } else if (pIndex > -1) {
             console.log(`prof id: ${name.substring(4)}`)
-            io.emit('attendance', {
+            listener.emit('attendance', {
                 name: data.name,
                 prof: data.prof,
                 absence: data.absence
@@ -225,10 +298,6 @@ io.on('connection', function (socket) {
     });
 });
 
-function clearCookie(res) {
-    res.clearCookie('attendance');
-}
-
 async function getAuthenticateStatus(page, callback, pass) {
     var redirPage = 'http://localhost:8080' + page
     var options = {
@@ -236,62 +305,70 @@ async function getAuthenticateStatus(page, callback, pass) {
         access_domain: "attendance"
     }
     await axios.post('http://localhost/moodle/api/v1/authenticate.php', options)
-    .then(function (response) {
-        // console.log('response: ', response.data)
-        // console.log('token: \'', response.data.access_token,'\'')
-        // var result = null;
-        // var token = response.data.access_token;
-        var login_url = response.data.login_url;
-        
-        // if (token == null) {
-        //     console.log('token: ', token);
-        //     console.log('login url: ', login_url)
-        //     result = login_url
-        // } else {
-        //     console.log('token is: ', token);
-        //     // Set cookie
-        //     var cookieOptions = {}
-        //     res.cookie('attendance', token, cookieOptions) // cookieOptions is optional
-        //     browser.set('attendance', token)
-        //     console.log('cookie created successfully');
-        //     result = redirPage
-        // }
-        callback(pass, login_url)
-    }).catch(function (error) {
-        console.log('____________________________________________________________ERROR')
-        console.log('error: ', error);
-        callback(pass, '/error')
-    });
+        .then(function (response) {
+            // console.log('response: ', response.data)
+            // console.log('token: \'', response.data.access_token,'\'')
+            // var result = null;
+            // var token = response.data.access_token;
+            var login_url = response.data.login_url;
+
+            // if (token == null) {
+            //     console.log('token: ', token);
+            //     console.log('login url: ', login_url)
+            //     result = login_url
+            // } else {
+            //     console.log('token is: ', token);
+            //     // Set cookie
+            //     var cookieOptions = {}
+            //     res.cookie('attendance', token, cookieOptions) // cookieOptions is optional
+            //     browser.set('attendance', token)
+            //     console.log('cookie created successfully');
+            //     result = redirPage
+            // }
+            callback(pass, login_url)
+        }).catch(function (error) {
+            console.log('___________________________________________________________getAuthenticateStatus_ERROR')
+            // console.log('error: ', error);
+            callback(pass, '/error')
+        });
 }
 async function retriveClasses(token, callback) {
     var courses = [];
-    await axios.get('http://localhost/moodle/api/v1/courses.php', {
-    params: {
-        token: token
-    }
-})
-.then(function (response) {
-    console.log(response.data);
-    var teachers_courses = response.data.teacher_courses
-    var student_courses = response.data.student_courses
-    if (teachers_courses == null) {
-        courses = response.student_courses;
-    } else {
-        courses = response.teacher_courses;
-    }
-})
-.catch(function (error) {
-    console.log(error);
-});
+    var url = 'http://localhost/moodle/api/v1/courses.php';
 
-callback(courses);
+    await axios.get(url, {
+            params: {
+                token: token
+            }
+        })
+        .then(function (response) {
+            console.log(response.data);
+
+            var teachers_courses = response.data.teacher_courses
+            var student_courses = response.data.student_courses
+            if (teachers_courses == null) {
+                courses = response.student_courses;
+            } else {
+                courses = response.teacher_courses;
+            }
+        })
+        .catch(function (error) {
+            console.log('___________________________________________________________retriveClasses_ERROR')
+            // console.log('error: ', error);
+        });
+
+    callback(courses);
 }
 async function getUserName(token, callback) {
-    await axios.get('http://localhost/moodle/api/v1/user/details.php', {headers: {authorization: token}})
-    .then(function (response) {
-        console.log(response.data)
-        callback(response.data.full_name);
-    });
+    await axios.get('http://localhost/moodle/api/v1/user/details.php', {
+            headers: {
+                authorization: token
+            }
+        })
+        .then(function (response) {
+            console.log(response.data)
+            callback(response.data.full_name);
+        });
 }
 
 function getToken() {
@@ -299,5 +376,3 @@ function getToken() {
     console.log('getToken: ', token);
     return token
 }
-
-http.listen(8080);

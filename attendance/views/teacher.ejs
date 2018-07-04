@@ -1,6 +1,7 @@
 <html>
 
 <head>
+    <meta charset="utf-8">
     <title>
         <%= title %>
     </title>
@@ -18,14 +19,14 @@
             bottom: 0;
             width: 100%;
         }
-        
+
         form input {
             border: 0;
             padding: 10px;
             width: 90%;
             margin-right: .5%;
         }
-        
+
         form button {
             width: 9%;
             background: rgb(130, 224, 255);
@@ -36,12 +37,231 @@
 </head>
 
 <body>
+    <script src="/socket.io/socket.io.js"></script>
+    <script>
+        var socket = io();
+    </script>
+    <script src="./js/jquery-1.11.1.js"></script>
+    <script>
+        $(function () {
+            var socket = io.connect('http://localhost:8080');
+
+            socket.on('connect', function () {
+                console.log('Client has connected to the server!');
+            });
+
+            $('#studentform').submit(function () {
+                socket.emit('attendance', {
+                    name: "PROF" + $('#course-name').val(),
+                    prof: $('#course-prof').val(),
+                    absence: $('#course-absence').val(),
+                });
+                return false;
+            });
+
+            $('#classform').submit(function () {
+                socket.emit('prof classes', {
+                    name: $('#class-name').val(),
+                    students: $('#class-students').val(),
+                });
+                return false;
+            });
+
+            //test socket for getting classes
+            socket.on('prof classes', function (data) {
+                $('#classList').append(
+                    $('<div>').attr({
+                        "data-toggle": "modal",
+                        "data-target": "#classAttendanceSetting"
+                    }).addClass('col-lg-3 col-md-4 col-sm-6').append(
+                        $('<div>').addClass('card-img').append(
+                            $('<div>').addClass('wrapper').append(
+                                $('<div>').addClass('wrapper-text').append(
+                                    $('<h4>').addClass("card-title").text(data.name),
+                                    $('<h6>').addClass("card-title").text("دانش‌آموز: " + data.students +
+                                        " نفر"),
+                                )
+                            )
+                        )
+                    )
+                )
+            });
+            socket.on('attendance', function (data) {
+                if (data.name.indexOf("STUDENT") > -1) {
+                    removeCardById(data.id)
+                    document.getElementById(data.name.substring(7)).remove()
+                    $('#aStudentsList').append(
+                        $('<div>').on("click", removeFromList).addClass(
+                            'col-lg-4 col-md-6 col-sm-12 ltr').append(
+                            $('<div>').addClass("card-img").append(
+                                $('<div>').addClass("wrapper-img").append(
+                                    $('<div>').addClass("content-img col-md-7").append(
+                                        // $('<h5>').addClass("card-title").text(data.name.substring(7)),
+                                        $('<h6>').addClass("card-title").text(data.student),
+                                        $('<h6>').addClass("card-title").text(data.absence +
+                                            ' غیبت')
+                                    ),
+                                    $('<div>').addClass("text-center col-md-5").append(
+                                        $('<img>', {
+                                            src: 'img/500x500.png'
+                                        }).addClass('responsive-img')
+                                    )
+                                )
+                            )
+                        )
+                    )
+                }
+            });
+            // <div class="col-lg-4 col-md-6 col-sm-12">
+            //         <div class="card-img">
+            //             <div class="wrapper-img">
+            //                 <div class="content-img col-md-7">
+            //                     <h5 class="card-title">9121312</h5>
+            //                     <h6 class="card-title">محمد علی احمدی خلجی</h6>
+            //                     <h6 class="card-title">غیبت ۳</h6>
+            //                 </div>
+            //                 <div class="text-center col-md-5">
+            //                     <img src="img/500x500.png" class="responsive-img">
+            //                 </div>
+            //             </div>
+            //         </div>
+            //     </div>
+
+            socket.on('student of class', function (data) {
+                $('#studentsList').append(
+                    $('<div>').attr({
+                        "id": data.name,
+                        "data-toggle": "modal",
+                        "data-target": "#classAttendanceSetting"
+                    }).addClass('col-lg-3 col-md-4 col-sm-6').append(
+                        $('<div>').addClass('card-img').append(
+                            $('<div>').addClass('wrapper').append(
+                                $('<div>').addClass('wrapper-text').append(
+                                    $('<h4>').addClass("card-title").text(data.name),
+                                    $('<h6>').addClass("card-title").text("تعداد غیبت: " + data.gheibat),
+                                )
+                            )
+                        )
+                    )
+                )
+            });
+            socket.on('classes', function (data) {
+                var x;
+                for (x in data.classes) {
+                    $('#classList').append(
+                        $('<div>').on("click", addModal).addClass('col-lg-3 col-md-4 col-sm-6').append(
+                            $('<div>').addClass('card-img').append(
+                                $('<div>').addClass('wrapper').append(
+                                    $('<div>').addClass('wrapper-text').append(
+                                        $('<h5>').addClass("card-title").text(data.studentId),
+                                        $('<h6>').addClass("card-title").text(data.name),
+                                        $('<h6>').addClass("card-title").text(data.absence +
+                                            ' غیبت')
+                                    )
+                                )
+                            )
+                        )
+                    )
+                }
+            });
+            // <div class="col-lg-3 col-md-4 col-sm-6">
+            //         <div class="card-img">
+            //             <div class="wrapper">
+            //                 <div class="wrapper-text">
+            //                     <h5 class="card-title">9121312</h5>
+            //                     <h6 class="card-title">محمد علی احمدی خلجی</h6>
+            //                     <h6 class="card-title">غیبت ۳</h6>
+            //                 </div>
+            //             </div>
+            //         </div>
+            //     </div>
+        });
+
+        function startAttendance() {
+            $('#classAttendanceSetting').modal('toggle');
+            console.log('–––––––––––Attendance starting!–––––––––––––');
+
+            socket.emit('attendance', {
+                name: "PROF" + $('#course-name').val(),
+                prof: $('#course-prof').val(),
+                absence: $('#course-absence').val(),
+            });
+            console.log('–––Attend request send to Students')
+        }
+
+        function detailsAPICall() {
+            var time = $('form-control').val() * 60 * 1000;
+
+            $.post('/mediator',{'time': time}, function (students, status) {
+                // console.log(students)
+                if (students.error !== undefined) {
+                    console.log('–––––––––––––––––––––––––––––––––––––––datailAPI–error')
+                    alert('Error in calling course detail!')
+                } else {
+                    console.log('datailAPI is ok!')
+                    for (i in students) {
+                        console.log(students[i])
+                        addStudent(students[i]);
+                    }
+                }
+            });
+        }
+
+        function addStudent(student) {
+            $('#studentsList').append(
+                $('<div>').attr({
+                    "id": student.id,
+                }).on('click', removeFromList).addClass('col-lg-3 col-md-4 col-sm-6').append(
+                    $('<div>').addClass('card-img').append(
+                        $('<div>').addClass('wrapper').append(
+                            $('<div>').addClass('wrapper-text').append(
+                                $('<h4>').addClass("card-title name").text(student.name),
+                                $('<h6>').addClass("card-title").text("تعداد غیبت: " + student.zipcode),
+                            )
+                        )
+                    )
+                )
+            )
+        }
+
+        function removeFromList() {
+
+            var name = $('#username').text()
+            console.log('name: ', username)
+
+            socket.emit('removedStudent', {
+                teacher: name,
+                id: this.id
+            });
+            console.log('id: ', this.id)
+            $(this).remove();
+        }
+
+        function removeCardById(id) {
+            $(`#${id}`).remove();
+        }
+
+        function removeCard() {
+            $(this).remove();
+        }
+
+        function classAdding() {
+            $('#classList').append(
+                $('<div>').on("click", addModal).addClass('col-lg-3 col-md-4 col-sm-6').append(
+                    $('<div>').addClass('card-img').append(
+                        $('<div>').addClass('wrapper').append(
+                            $('<div>').addClass('wrapper-text').append(
+                                $('<h5>').addClass("card-title").text($('#class-name').val()),
+                                $('<h6>').addClass("card-title").text($('#class-students').val()),
+                            )))))
+        }
+    </script>
     <div class="container" id="messages">
         <div id="classAttendanceSetting" class="modal fade" tabindex="-1" role="dialog" aria-labelledby="classSettingTitle" aria-hidden="true">
             <div class="modal-dialog modal-lg" role="document">
                 <div class="modal-content">
                     <div class="modal-header">
-                        <h5 class="modal-title" id="exampleModalCenterTitle">پنل حضور کلاسی</h5>
+                        <h5 class="modal-title" id="exampleModalCenterTitle">حضور کلاسی</h5>
                         <button type="button" class="close" data-dismiss="modal" aria-label="Close">
                             <span aria-hidden="true">&times;</span>
                         </button>
@@ -61,7 +281,7 @@
                     <div class="modal-footer ltr">
                         <button type="button" class="btn btn-secondary" data-dismiss="modal">بازگشت</button>
                         <span></span>
-                        <button type="button" class="btn btn-primary" onclick="detailsAPICall()">شروع</button>
+                        <button type="button" class="btn btn-primary" data-dismiss="modal" onclick="detailsAPICall()">شروع</button>
                     </div>
                 </div>
             </div>
@@ -82,223 +302,43 @@
                 <button>Send</button>
             </form>
         </div>
-        
+
+        <div id="topbar">
+            <h3 id="username" style="text-align: center">خوش آمدید،
+                <%= username %>
+            </h3>
+        </div>
+        <hr>
+        <br>
         <h3 class="sectionTitle">کلاس های شما</h3>
         <hr>
-        <div class="row rtl" id="classList">
-            <!-- <div class="col-lg-3 col-md-4 col-sm-6">
-                <div class="card-img">
-                    <div class="wrapper">
-                        <div class="wrapper-text">
-                            <h5 class="card-title">9121312</h5>
-                            <h6 class="card-title">محمد علی احمدی خلجی</h6>
-                            <h6 class="card-title">غیبت ۳</h6>
-                        </div>
-                    </div>
-                </div>
-            </div>
-            <div class="col-lg-3 col-md-4 col-sm-6">
-                <div class="card-img">
-                    <div class="wrapper">
-                        <div class="wrapper-text">
-                            <h5 class="card-title">9121312</h5>
-                            <h6 class="card-title">محمد علی احمدی خلجی</h6>
-                            <h6 class="card-title">غیبت ۳</h6>
-                        </div>
-                    </div>
-                </div>
-            </div> -->
-            <!-- <div class="col-lg-3 col-md-4 col-sm-6" data-toggle="modal" data-target="#classAttendanceSetting">
-                <div class="card-img">
-                    <div class="wrapper">
-                        <div class="wrapper-text">
-                            <h5 class="card-title">9121312</h5>
-                            <h6 class="card-title">محمد علی احمدی خلجی</h6>
-                            <h6 class="card-title">غیبت ۳</h6>
-                        </div>
-                    </div>
-                </div>
-            </div> -->
-        </div>
+        <div class="row rtl" id="classList"></div>
         <br>
         <h3 class="sectionTitle">لیست دانش‌آموزان</h3>
         <hr>
         <div class="row rtl" id="aStudentsList"></div>
         <div class="row rtl" id="studentsList"></div>
-        
-        
+
+        <script>
+            //for sticky topbar
+            window.onscroll = function () {
+                myFunction()
+            };
+
+            var topbar = document.getElementById("topbar");
+            var sticky = topbar.offsetTop;
+
+            function myFunction() {
+                if (window.pageYOffset >= sticky) {
+                    topbar.classList.add("sticky")
+                } else {
+                    topbar.classList.remove("sticky");
+                }
+            }
+        </script>
         <script type="text/javascript" src="js/bootstrap.min.js"></script>
     </div>
-    <script src="./js/socket.io-1.2.0.js"></script>
-    <script src="./js/jquery-1.11.1.js"></script>
-    <script>
-        var socket = io.connect('http://localhost:8080');
-        
-        socket.on('connect', function () {
-            console.log('Client has connected to the server!');
-        });
-    </script>
-    <script>
-        function startAttendance() {
-            $('#classAttendanceSetting').modal('toggle');
-            console.log('–––––––––––Attendance starting!–––––––––––––');
-            
-            socket.emit('attendance', {
-                name: "PROF" + $('#course-name').val(),
-                prof: $('#course-prof').val(),
-                absence: $('#course-absence').val(),
-            });
-            console.log('–––Attend request send to Students')
-        }
-        
-        function detailsAPICall() {
-            $.get('/mediator', function (data, status) {
-                alert("Data: " + data + "\nStatus: " + status);
-            });
-        }
-        
-        function removeCard() {
-            $(this).remove();
-        }
-        
-        function classAdding() {
-            $('#classList').append(
-            $('<div>').on("click", addModal).addClass('col-lg-3 col-md-4 col-sm-6').append(
-                $('<div>').addClass('card-img').append(
-                    $('<div>').addClass('wrapper').append(
-                        $('<div>').addClass('wrapper-text').append(
-                            $('<h5>').addClass("card-title").text($('#class-name').val()),
-                                $('<h6>').addClass("card-title").text($('#class-students').val()),
-                                    )))))}
-                                $(function () {
-                                    var socket = io();
-                                    
-                                    $('#studentform').submit(function () {
-                                        socket.emit('attendance', {
-                                            name: "PROF" + $('#course-name').val(),
-                                            prof: $('#course-prof').val(),
-                                            absence: $('#course-absence').val(),
-                                        });
-                                        return false;
-                                    });
-                                    
-                                    $('#classform').submit(function () {
-                                        console.log('#classform')
-                                        socket.emit('prof classes', {
-                                            name: $('#class-name').val(),
-                                            students: $('#class-students').val(),
-                                        });
-                                        return false;
-                                    });
-                                    socket.on('prof classes', function (data) {
-                                        $('#classList').append(
-                                        $('<div>').attr({
-                                            "data-toggle": "modal",
-                                            "data-target": "#classAttendanceSetting"
-                                        }).addClass('col-lg-3 col-md-4 col-sm-6').append(
-                                        $('<div>').addClass('card-img').append(
-                                            $('<div>').addClass('wrapper').append(
-                                                $('<div>').addClass('wrapper-text').append(
-                                                    $('<h4>').addClass("card-title").text(data.name),
-                                                        $('<h6>').addClass("card-title").text("دانش‌آموز: " + data.students +
-                                                            " نفر"),
-                                                            )
-                                                            )
-                                                            )
-                                                            )
-                                                            )
-                                                        });
-                                                        socket.on('attendance', function (data) {
-                                                            if (data.name.indexOf("STUDENT") > -1) {
-                                                                document.getElementById(data.name.substring(7)).remove()
-                                                                $('#aStudentsList').append(
-                                                                $('<div>').on("click", removeCard).addClass(
-                                                                    'col-lg-4 col-md-6 col-sm-12 ltr').append(
-                                                                    $('<div>').addClass("card-img").append(
-                                                                        $('<div>').addClass("wrapper-img").append(
-                                                                            $('<div>').addClass("content-img col-md-7").append(
-                                                                                // $('<h5>').addClass("card-title").text(data.name.substring(7)),
-                                                                                    $('<h6>').addClass("card-title").text(data.student),
-                                                                                        $('<h6>').addClass("card-title").text(data.absence +
-                                                                                            ' غیبت')
-                                                                                            ),
-                                                                                            $('<div>').addClass("text-center col-md-5").append(
-                                                                                                $('<img>', {
-                                                                                                    src: 'img/500x500.png'
-                                                                                                }).addClass('responsive-img')
-                                                                                                )
-                                                                                                )
-                                                                                                )
-                                                                                                )
-                                                                                                )
-                                                                                            }
-                                                                                        });
-                                                                                        // <div class="col-lg-4 col-md-6 col-sm-12">
-                                                                                            //         <div class="card-img">
-                                                                                                //             <div class="wrapper-img">
-                                                                                                    //                 <div class="content-img col-md-7">
-                                                                                                        //                     <h5 class="card-title">9121312</h5>
-                                                                                                        //                     <h6 class="card-title">محمد علی احمدی خلجی</h6>
-                                                                                                        //                     <h6 class="card-title">غیبت ۳</h6>
-                                                                                                        //                 </div>
-                                                                                                        //                 <div class="text-center col-md-5">
-                                                                                                            //                     <img src="img/500x500.png" class="responsive-img">
-                                                                                                            //                 </div>
-                                                                                                            //             </div>
-                                                                                                            //         </div>
-                                                                                                            //     </div>
-                                                                                                            
-                                                                                                            socket.on('student of class', function (data) {
-                                                                                                                $('#studentList').append(
-                                                                                                                $('<div>').attr({
-                                                                                                                    "id": data.name,
-                                                                                                                    "data-toggle": "modal",
-                                                                                                                    "data-target": "#classAttendanceSetting"
-                                                                                                                }).addClass('col-lg-3 col-md-4 col-sm-6').append(
-                                                                                                                $('<div>').addClass('card-img').append(
-                                                                                                                    $('<div>').addClass('wrapper').append(
-                                                                                                                        $('<div>').addClass('wrapper-text').append(
-                                                                                                                            $('<h4>').addClass("card-title").text(data.name),
-                                                                                                                                $('<h6>').addClass("card-title").text("تعداد غیبت: " + data.gheibat),
-                                                                                                                                    )
-                                                                                                                                    )
-                                                                                                                                    )
-                                                                                                                                    )
-                                                                                                                                    )
-                                                                                                                                });
-                                                                                                                                socket.on('classes', function (data) {
-                                                                                                                                    var x;
-                                                                                                                                    for (x in data.classe) {
-                                                                                                                                        $('#classList').append(
-                                                                                                                                        $('<div>').on("click", addModal).addClass('col-lg-3 col-md-4 col-sm-6').append(
-                                                                                                                                            $('<div>').addClass('card-img').append(
-                                                                                                                                                $('<div>').addClass('wrapper').append(
-                                                                                                                                                    $('<div>').addClass('wrapper-text').append(
-                                                                                                                                                        $('<h5>').addClass("card-title").text(data.studentId),
-                                                                                                                                                            $('<h6>').addClass("card-title").text(data.name),
-                                                                                                                                                                $('<h6>').addClass("card-title").text(data.absence +
-                                                                                                                                                                    ' غیبت')
-                                                                                                                                                                    )
-                                                                                                                                                                    )
-                                                                                                                                                                    )
-                                                                                                                                                                    )
-                                                                                                                                                                    )
-                                                                                                                                                                }
-                                                                                                                                                            });
-                                                                                                                                                            // <div class="col-lg-3 col-md-4 col-sm-6">
-                                                                                                                                                                //         <div class="card-img">
-                                                                                                                                                                    //             <div class="wrapper">
-                                                                                                                                                                        //                 <div class="wrapper-text">
-                                                                                                                                                                            //                     <h5 class="card-title">9121312</h5>
-                                                                                                                                                                            //                     <h6 class="card-title">محمد علی احمدی خلجی</h6>
-                                                                                                                                                                            //                     <h6 class="card-title">غیبت ۳</h6>
-                                                                                                                                                                            //                 </div>
-                                                                                                                                                                            //             </div>
-                                                                                                                                                                            //         </div>
-                                                                                                                                                                            //     </div>
-                                                                                                                                                                        });
-                                                                                                                                                                    </script>
-                                                                                                                                                                </body>
-                                                                                                                                                                
-                                                                                                                                                                
-                                                                                                                                                                </html>
+</body>
+
+
+</html>
