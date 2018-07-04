@@ -221,20 +221,6 @@
                 }
             }
         },
-        "CheckLoginResponse": {
-            "properties": {
-                "logged_in": {
-                    "description": "",
-                    "type": "boolean",
-                    "example": "true"
-                },
-                "full_name": {
-                    "description": "",
-                    "type": "string",
-                    "example": "Ali Shamakhi"
-                }
-            }
-        },
         "CourseAttendParameter": {
             "properties": {
                 "course_id": {
@@ -340,6 +326,25 @@
                     "items": {
                         "$ref": "#/definitions/StudentCourse"
                     }
+                }
+            }
+        },
+        "LoginDetailsResponse": {
+            "properties": {
+                "id": {
+                    "description": "",
+                    "type": "integer",
+                    "example": 1
+                },
+                "logged_in": {
+                    "description": "",
+                    "type": "boolean",
+                    "example": true
+                },
+                "full_name": {
+                    "description": "",
+                    "type": "string",
+                    "example": "Ali Shamakhi"
                 }
             }
         },

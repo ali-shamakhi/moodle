@@ -76,7 +76,7 @@ if (isset($userid_accessdomain->userid) && $userid_accessdomain->userid != 0) {
     }
 }
 
-$user_details_response = new CheckLoginResponse($logged_in, $full_name);
+$user_details_response = new LoginDetailsResponse((isset($userid_accessdomain->userid) ? $userid_accessdomain->userid : 0), $logged_in, $full_name);
 
 echo json_encode($user_details_response);
 
