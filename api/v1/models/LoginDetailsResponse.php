@@ -3,13 +3,21 @@
  * @SWG\Definition()
  */
 
-class CheckLoginResponse
+class LoginDetailsResponse
 {
+
+    /**
+     * @var int
+     * @SWG\Property(
+     *     example=1
+     * )
+     */
+    public $id;
 
     /**
      * @var boolean
      * @SWG\Property(
-     *     example="true"
+     *     example=true
      * )
      */
     public $logged_in;
@@ -22,8 +30,9 @@ class CheckLoginResponse
      */
     public $full_name;
 
-    public function __construct($logged_in, $full_name)
+    public function __construct($id, $logged_in, $full_name)
     {
+        $this->id = $id;
         $this->logged_in = $logged_in;
         $this->full_name = $full_name;
     }

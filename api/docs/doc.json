@@ -192,7 +192,7 @@
                     "200": {
                         "description": "Details about user login",
                         "schema": {
-                            "$ref": "#/definitions/CheckLoginResponse"
+                            "$ref": "#/definitions/LoginDetailsResponse"
                         }
                     },
                     "default": {
@@ -218,20 +218,6 @@
                     "description": "",
                     "type": "string",
                     "example": "{DOMAIN}/login?redirect={DOMAIN}/attendance/"
-                }
-            }
-        },
-        "CheckLoginResponse": {
-            "properties": {
-                "logged_in": {
-                    "description": "",
-                    "type": "boolean",
-                    "example": "true"
-                },
-                "full_name": {
-                    "description": "",
-                    "type": "string",
-                    "example": "Ali Shamakhi"
                 }
             }
         },
@@ -340,6 +326,25 @@
                     "items": {
                         "$ref": "#/definitions/StudentCourse"
                     }
+                }
+            }
+        },
+        "LoginDetailsResponse": {
+            "properties": {
+                "id": {
+                    "description": "",
+                    "type": "integer",
+                    "example": 1
+                },
+                "logged_in": {
+                    "description": "",
+                    "type": "boolean",
+                    "example": true
+                },
+                "full_name": {
+                    "description": "",
+                    "type": "string",
+                    "example": "Ali Shamakhi"
                 }
             }
         },
