@@ -43,15 +43,15 @@
     </script>
     <script src="./js/jquery-1.11.1.js"></script>
     <script>
+        console.log("sajjad")
         var resultsArr = [];
-        <% for (var i=0, len=courses.length; i<len; i++) { %>
-        resultsArr.push(<%- courses[i] %>);
-        <% } %>
-        console.log(resultsArr)
-        for (i in students) {
-            console.log(students[i])
-            addTOClassList(students[i]);
-        }
+        var tempCourses = <%= courses %>
+        console.log(tempCourses)
+        // console.log(resultsArr)
+        // for (i in students) {
+        //     console.log(students[i])
+        //     addTOClassList(students[i]);
+        // }
     </script>
     <script>
         $(function () {
@@ -219,20 +219,24 @@
         }
 
         function detailsAPICall() {
-            var time = $('form-control').val() * 60 * 1000;
+            var time = $('#exampleFormControlSelect1').val() * 60 * 1000;
 
             $.post('/mediator', {
-                'time': time
+                'time': time,
+                'course_id': 4
             }, function (students, status) {
-                // console.log(students)
-                if (students.error !== undefined) {
+                // console.log(students.students_details)
+                console.log(students)
+                if (students.error !== null) {
                     console.log('–––––––––––––––––––––––––––––––––––––––datailAPI–error')
                     alert('Error in calling course detail!')
+                    
                 } else {
                     console.log('datailAPI is ok!')
-                    for (i in students) {
-                        console.log(students[i])
-                        addStudent(students[i]);
+                    var studentsDetails = students.students_details
+                    for (i in studentsDetails) {
+                        console.log(studentsDetails[i])
+                        addStudent(studentsDetails[i]);
                     }
                 }
             });
@@ -246,8 +250,8 @@
                     $('<div>').addClass('card-img').append(
                         $('<div>').addClass('wrapper').append(
                             $('<div>').addClass('wrapper-text').append(
-                                $('<h4>').addClass("card-title name").text(student.name),
-                                $('<h6>').addClass("card-title").text("تعداد غیبت: " + student.zipcode),
+                                $('<h4>').addClass("card-title name").text(student.full_name),
+                                $('<h6>').addClass("card-title").text("تعداد غیبت: " + student.absence_count),
                             )
                         )
                     )
@@ -286,7 +290,12 @@
                                 $('<h6>').addClass("card-title").text($('#class-students').val()),
                             )))))
         }
-    </script>
+        // var course_id = null
+        // $('.course-container').on('click',function(){
+        //     console.log($(this));
+        //     course_id = $(this).id;
+        // })
+        </script>
     <div class="container" id="messages">
         <div id="classAttendanceSetting" class="modal fade" tabindex="-1" role="dialog" aria-labelledby="classSettingTitle" aria-hidden="true">
             <div class="modal-dialog modal-lg" role="document">
@@ -301,11 +310,11 @@
                         <div class="form-group">
                             <label for="exampleFormControlSelect1">زمان حضور و غیاب</label>
                             <select class="form-control rtl" id="exampleFormControlSelect1">
-                                <option>۵ دقیقه</option>
-                                <option>۱۰ دقیقه</option>
-                                <option>۱۵ دقیقه</option>
-                                <option>۳۰ دقیقه</option>
-                                <option>۱ ساعت</option>
+                                <option value="5">۵ دقیقه</option>
+                                <option value="10">۱۰ دقیقه</option>
+                                <option value="15">۱۵ دقیقه</option>
+                                <option value="30">۳۰ دقیقه</option>
+                                <option value="60">۱ ساعت</option>
                             </select>
                         </div>
                     </div>
@@ -343,7 +352,28 @@
         <br>
         <h3 class="sectionTitle">کلاس های شما</h3>
         <hr>
-        <div class="row rtl" id="classList"></div>
+        <div class="row rtl" id="classList">
+            <% for(var i=0; i<courses.length; i++) {%>
+                    <!-- <div>').attr({ "data-toggle": "modal", "data-target": "#classAttendanceSetting" }).addClass('col-lg-3
+                                col-md-4 col-sm-6').append( $('
+                                <div>').addClass('card-img').append( $('
+                                    <div>').addClass('wrapper').append( $('
+                                        <div>').addClass('wrapper-text').append( $('
+                                            <h4>').addClass("card-title").text(data.name), $('
+                                                <h6>').addClass("card-title").text("دانش‌آموز: " + data.students + " نفر"), )
+                                                    ) ) ) -->
+                    <div class="col-lg-3 col-md-4 col-sm-6 course-container" data-toggle="modal" data-target="#classAttendanceSetting" id= <%= courses[i].course_id %>>
+                        <div class="card-img">
+                            <div class="wrapper">
+                                <div class="wrapper-text">
+                                    <h6 class="card-title"><%= courses[i].course_name %></h6>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <% } %>
+        </div>
         <br>
         <h3 class="sectionTitle">لیست دانش‌آموزان</h3>
         <hr>

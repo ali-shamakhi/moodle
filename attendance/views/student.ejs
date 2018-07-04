@@ -78,7 +78,7 @@
                                 "data-target": "#classAttendancy"
                             }).append(
                                 $('<div>').addClass("card-img").append(
-                                    $('<div>').addClass("wrapper-img").append(
+                                    $('<div>').addClass("wrapper-img-blue").append(
                                         $('<div>').addClass("content-img col-md-7").append(
                                             $('<h5>').addClass("card-title").text(data.name.substring(4)),
                                             $('<h6>').addClass("card-title").text(data.prof),
@@ -121,42 +121,65 @@
             </div>
         </div>
         <div class="col-sm-12">
-                <form class="sendform">
-                    <input id="course-name" autocomplete="off" placeholder="name" />
-                    <input id="course-student" autocomplete="off" placeholder="prof-name" />
-                    <input id="course-absence" autocomplete="off" placeholder="absence" />
-                    <button>Send</button>
-                </form>
+            <form class="sendform">
+                <input id="course-name" autocomplete="off" placeholder="name" />
+                <input id="course-student" autocomplete="off" placeholder="prof-name" />
+                <input id="course-absence" autocomplete="off" placeholder="absence" />
+                <button>Send</button>
+            </form>
             <div id="topbar">
-            <h3 id="username" style="text-align: center">خوش آمدید،
-                <%= username %>
-            </h3>
-        </div>
-        <hr>
-        <br>
-        <h3 class="sectionTitle">کلاس های شما</h3>
-        <hr>
-        <div class="row" id="coursesList"></div>
+                <h3 id="username" style="text-align: center">خوش آمدید،
+                    <%= username %>
+                </h3>
+            </div>
+            <hr>
+            <br>
+            <h3 class="sectionTitle">کلاس های شما</h3>
+            <hr>
+            <div class="row" id="coursesList">
+                <% for(var i=0; i<courses.length; i++) {%>
+                    <div class="col-lg-4 col-md-6 col-sm-12 course-container" data-toggle="modal" data-target="#classAttendancy" id=< %=courses[i].course_id%>>
+                        <div class="card-img">
+                            <div class="wrapper-img-grey">
+                                <div class="content-img col-md-7">
+                                    <h5 class="card-title">
+                                        <%= courses[i].course_name %>
+                                    </h5>
+                                    <h6 class="card-title">
+                                        <%= courses[i].teachers_full_names[0] %>
+                                    </h6>
+                                    <h6 class="card-title"> غیبت
+                                        <%= courses[i].absence_count %>
+                                    </h6>
+                                </div>
+                                <div class="text-center col-md-5">
+                                    <img src="<%= courses[i].pic_url %>" class="responsive-img">
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <% } %>
+            </div>
 
-        <script type="text/javascript" src="js/bootstrap.min.js"></script>
-        <script>
-            //for sticky topbar
-            window.onscroll = function () {
-                myFunction()
-            };
+            <script type="text/javascript" src="js/bootstrap.min.js"></script>
+            <script>
+                //for sticky topbar
+                window.onscroll = function () {
+                    myFunction()
+                };
 
-            var topbar = document.getElementById("topbar");
-            var sticky = topbar.offsetTop;
+                var topbar = document.getElementById("topbar");
+                var sticky = topbar.offsetTop;
 
-            function myFunction() {
-                if (window.pageYOffset >= sticky) {
-                    topbar.classList.add("sticky")
-                } else {
-                    topbar.classList.remove("sticky");
+                function myFunction() {
+                    if (window.pageYOffset >= sticky) {
+                        topbar.classList.add("sticky")
+                    } else {
+                        topbar.classList.remove("sticky");
+                    }
                 }
-            }
-        </script>
-    </div>
+            </script>
+        </div>
 </body>
 
 

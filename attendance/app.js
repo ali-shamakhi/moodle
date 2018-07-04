@@ -112,14 +112,14 @@ app.get('/student', function (req, res) {
                 res.redirect(url);
             }, res);
         } else {
-            retriveClasses(token, function (res, courses) {
-                coursesss = JSON.parse(courses);
-                console.dir(courses)
-                if (courses !== undefined) {
+            retriveClasses(token, function (courses) {
+                coursesss = JSON.parse(courses)
+                console.log('coursesss: ',coursesss)
+                if (coursesss !== undefined) {
                     getUserName(token, function (name) {
                         console.log('name: ', name)
                         res.render('student', {
-                            title: 'Student Attendance Page',
+                            title: 'Your Attendance Page',
                             courses: coursesss,
                             username: name
                         });
@@ -167,7 +167,7 @@ app.get('/teacher', function (req, res) {
                 if (coursesss !== undefined) {
                     getUserName(token, function (name) {
                         console.log('name: ', name)
-                        res.render('student', {
+                        res.render('teacher', {
                             title: 'Student Attendance Page',
                             courses: coursesss,
                             username: name
@@ -187,7 +187,9 @@ app.get('/teacher', function (req, res) {
 });
 app.post('/mediator', function (req, res) {
     //check time
-    var time = req.data.time
+    // console.log(req)
+    var time = req.body.time
+    var id = req.body.course_id
 
     console.log(time)
 
@@ -225,10 +227,10 @@ app.post('/mediator', function (req, res) {
                 authorization: token
             },
             params: {
-                course_id: course_id
+                course_id: id
             }
         }).then(function (response) {
-            res.send(JSON.stringify(response.data))
+            res.send(response.data)
         }).catch(function (error) {
             console.log('___________________________________________________________mediator_ERROR')
             // console.log('error: ', error);
