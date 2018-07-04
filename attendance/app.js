@@ -190,6 +190,7 @@ app.post('/mediator', function (req, res) {
     // console.log(req)
     var time = req.body.time
     var id = req.body.course_id
+    var name = req.body.name
 
     console.log(time)
 
