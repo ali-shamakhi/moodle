@@ -115,7 +115,7 @@ foreach (get_role_users(4, $course_context) as $teacher) {
 foreach (get_role_users(5, $course_context) as $student) {
     $absence_count = (isset($attendance_record) ? $DB->count_records_sql('SELECT COUNT(id) FROM {assign_grades} 
  WHERE assignment = '.$attendance_record->id.' AND userid = '.$student->id.' AND grade < 0.99') : 0);
-    array_push($students_details, new StudentDetails($student->id, $student->firstname.' '.$teacher->lastname,
+    array_push($students_details, new StudentDetails($student->id, $student->firstname.' '.$student->lastname,
         'http://localhost/moodle/user/pix.php/'.$student->id.'/f1.jpg', $absence_count));
 }
 
