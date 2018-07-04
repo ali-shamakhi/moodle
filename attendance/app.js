@@ -337,27 +337,29 @@ async function retriveClasses(token, callback) {
     var url = 'http://localhost/moodle/api/v1/courses.php';
 
     await axios.get(url, {
-            params: {
-                token: token
+            headers: {
+                authorization: token
             }
         })
         .then(function (response) {
+            console.log('here')
             console.log(response.data);
-
-            var teachers_courses = response.data.teacher_courses
-            var student_courses = response.data.student_courses
-            if (teachers_courses == null) {
-                courses = response.student_courses;
+            var data = JSON.stringify(response.data)
+            var teachers_courses = data.teachers_courses
+            var student_courses = data.student_courses
+            if (teachers_courses.length == 0) {
+                courses = student_courses;
             } else {
-                courses = response.teacher_courses;
+                courses = teachers_courses;
             }
+            console.log('courses: ', courses)
         })
         .catch(function (error) {
             console.log('___________________________________________________________retriveClasses_ERROR')
-            // console.log('error: ', error);
+            console.log('error: ', error);
         });
-
-    callback(courses);
+// console.log(courses)
+    callback(JSON.stringify(courses));
 }
 async function getUserName(token, callback) {
     await axios.get('http://localhost/moodle/api/v1/user/details.php', {
