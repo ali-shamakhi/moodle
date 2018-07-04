@@ -24,6 +24,14 @@ class CourseDetailsResponse
     public $course_id;
 
     /**
+     * @var string
+     * @SWG\Property(
+     *     description="First Teacher's picture URL"
+     * )
+     */
+    public $pic_url;
+
+    /**
      * @var int
      * @SWG\Property(
      *     example=1528095600
@@ -70,10 +78,11 @@ class CourseDetailsResponse
      */
     public $students_details;
 
-    public function __construct($error, $course_id, $session_start_timestamp, $session_end_timestamp, $past_attendance_count, $teachers_full_name, $students_details)
+    public function __construct($error, $course_id, $pic_url, $session_start_timestamp, $session_end_timestamp, $past_attendance_count, $teachers_full_name, $students_details)
     {
         $this->error = $error;
         $this->course_id = $course_id;
+        $this->pic_url = $pic_url;
         $this->session_start_timestamp = $session_start_timestamp;
         $this->session_end_timestamp = $session_end_timestamp;
         $this->past_attendance_count = $past_attendance_count;
