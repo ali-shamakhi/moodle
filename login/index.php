@@ -30,7 +30,6 @@ require_once('lib.php');
 redirect_if_major_upgrade_required();
 
 $testsession = optional_param('testsession', 0, PARAM_INT); // test session works properly
-$oauth       = optional_param('oauth', 0, PARAM_INT); // test session works properly
 $anchor      = optional_param('anchor', '', PARAM_RAW);      // Used to restore hash anchor to wantsurl.
 
 $context = context_system::instance();
@@ -43,14 +42,25 @@ $errormsg = '';
 $errorcode = 0;
 
 // custom redirect
-$redirect_url = null;
 try {
     $redirect_url = $_GET["redirect"];
+    if (isset($redirect_url) && trim($redirect_url) != "")
+        $SESSION->redirect_url = $redirect_url;
 } catch (exception $e) {
-    // nothing
+    unset($SESSION->redirect_url);
 }
+//error_log('RRR: redirect_url='.$redirect_url);
+//$oauth = 0;
+//try {
+//    $oauth = intval($_GET["oauth"]);
+//} catch (exception $e) {
+//    // nothing
+//}
 
-if ($oauth && isset($USER->id) && $USER->id > 0 && isset($redirect_url) && trim($redirect_url) != "") {
+if (/*$oauth && */isset($USER->id) && $USER->id != 0 && isset($SESSION->redirect_url)) {
+    $redirect_url = $SESSION->redirect_url;
+    unset($SESSION->redirect_url);
+    error_log('GAT_HERE');
     $access_token = get_access_token($DB, $USER, 'attendance');
     $url = $redirect_url.'?token='.$access_token;
     $encodedurl = preg_replace("/\&(?![a-zA-Z0-9#]{1,8};)/", "&amp;", $url);
@@ -70,10 +80,13 @@ if ($testsession) {
             $urltogo = $CFG->wwwroot.'/';
         }
         unset($SESSION->wantsurl);
-        error_log('RD1');
-        if ($oauth && isset($USER->id) && $USER->id > 0) {
+        error_log('RD1: urltogo='.$urltogo);
+        if (isset($USER->id) && $USER->id != 0 && isset($SESSION->redirect_url)) {
+            error_log('GET_THERE. userid='.$USER->id);
+            $redirect_url = $SESSION->redirect_url;
+            unset($SESSION->redirect_url);
             $access_token = get_access_token($DB, $USER, 'attendance');
-            $url = $urltogo.'?token='.$access_token;
+            $url = $redirect_url.'?token='.$access_token;
             $encodedurl = preg_replace("/\&(?![a-zA-Z0-9#]{1,8};)/", "&amp;", $url);
             $encodedurl = preg_replace('/^.*href="([^"]*)".*$/', "\\1", clean_text('<a href="'.$encodedurl.'" />', FORMAT_HTML));
             @header($_SERVER['SERVER_PROTOCOL'] . ' 303 See Other');
@@ -81,8 +94,10 @@ if ($testsession) {
             echo bootstrap_renderer::plain_redirect_message($encodedurl);
             exit;
         }
-        else
+        else {
+            error_log('GGG: userid='.$USER->id);
             redirect($urltogo);
+        }
     } else {
         // TODO: try to find out what is the exact reason why sessions do not work
         $errormsg = get_string("cookiesnotenabled");
@@ -276,8 +291,8 @@ if ($frm and isset($frm->username)) {                             // Login WITH 
         // test the session actually works by redirecting to self
         $SESSION->wantsurl = $urltogo;
         error_log('RD2');
-        if ($oauth) {
-            $url_params = array('testsession'=>$USER->id, 'oauth'=>1);
+        if (isset($SESSION->redirect_url)) {
+            $url_params = array('testsession'=>$USER->id, 'oauth'=>1);  // oauth not needed
         } else {
             $url_params = array('testsession'=>$USER->id);
         }
@@ -303,13 +318,11 @@ if ($session_has_timed_out and !data_submitted()) {
 
 /// First, let's remember where the user was trying to get to before they got here
 
-$oauth = false;
 if (empty($SESSION->wantsurl)) {
     $SESSION->wantsurl = null;
     $referer = null;
-    if ($redirect_url != null && trim($redirect_url) != "") {
-        $referer = $redirect_url;
-        $oauth = true;
+    if (isset($SESSION->redirect_url)) {
+        $referer = $SESSION->redirect_url;
     } else {
         $referer = get_local_referer(false);
     }
