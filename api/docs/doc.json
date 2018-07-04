@@ -274,6 +274,10 @@
                     "type": "integer",
                     "example": 2
                 },
+                "pic_url": {
+                    "description": "First Teacher's picture URL",
+                    "type": "string"
+                },
                 "session_start_timestamp": {
                     "description": "",
                     "type": "integer",

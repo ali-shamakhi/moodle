@@ -106,16 +106,19 @@ try {
 $course_context = context_course::instance($course->id);
 $teachers_names = array();
 $students_details = array();
+unset($teacher_pic_url);
 foreach (get_role_users(3, $course_context) as $teacher) {
     array_push($teachers_names, $teacher->firstname.' '.$teacher->lastname);
+    if (!isset($teacher_pic_url)) $teacher_pic_url = 'http://localhost/moodle/user/pix.php/'.$teacher->id.'/f1.jpg';
 }
 foreach (get_role_users(4, $course_context) as $teacher) {
     array_push($teachers_names, $teacher->firstname.' '.$teacher->lastname);
+    if (!isset($teacher_pic_url)) $teacher_pic_url = 'http://localhost/moodle/user/pix.php/'.$teacher->id.'/f1.jpg';
 }
 foreach (get_role_users(5, $course_context) as $student) {
     $absence_count = (isset($attendance_record) ? $DB->count_records_sql('SELECT COUNT(id) FROM {assign_grades} 
  WHERE assignment = '.$attendance_record->id.' AND userid = '.$student->id.' AND grade < 0.99') : 0);
-    array_push($students_details, new StudentDetails($student->id, $student->firstname.' '.$teacher->lastname,
+    array_push($students_details, new StudentDetails($student->id, $student->firstname.' '.$student->lastname,
         'http://localhost/moodle/user/pix.php/'.$student->id.'/f1.jpg', $absence_count));
 }
 
@@ -127,7 +130,7 @@ $session_end_timestamp = $session_timestamps->end;
 
 $past_attendance_count = $DB->count_records_sql('SELECT COUNT(id) FROM {assign} WHERE course = '.$course_id.' AND `name` LIKE "Attendance %"');
 
-$course_details = new CourseDetailsResponse(null, $course_id, $session_start_timestamp, $session_end_timestamp, $past_attendance_count, $teachers_names, $students_details);
+$course_details = new CourseDetailsResponse(null, $course_id, $teacher_pic_url, $session_start_timestamp, $session_end_timestamp, $past_attendance_count, $teachers_names, $students_details);
 
 echo json_encode($course_details);
 
