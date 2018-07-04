@@ -113,10 +113,10 @@ app.get('/student', function (req, res) {
             }, res);
         } else {
             retriveClasses(token, function (res, courses) {
-                coursesss = JSON.stringify(courses);
+                coursesss = JSON.parse(courses);
                 console.dir(courses)
                 if (courses !== undefined) {
-                    getUserName(token, function (res, name) {
+                    getUserName(token, function (name) {
                         console.log('name: ', name)
                         res.render('student', {
                             title: 'Student Attendance Page',
@@ -153,17 +153,19 @@ app.get('/teacher', function (req, res) {
 
         // clear cookie
         // res.clearCookie('attendance'); 
+        
+         console.log('token: ', token)
         if (token === undefined) {
             getAuthenticateStatus('/teacher', function (res, url) {
                 console.log(url)
                 res.redirect(url);
             }, res);
         } else {
-            retriveClasses(token, function (res, courses) {
-                coursesss = JSON.stringify(courses);
-                console.dir(courses)
-                if (courses !== undefined) {
-                    getUserName(token, function (res, name) {
+            retriveClasses(token, function (courses) {
+                coursesss = JSON.parse(courses)
+                console.log('coursesss: ',coursesss)
+                if (coursesss !== undefined) {
+                    getUserName(token, function (name) {
                         console.log('name: ', name)
                         res.render('student', {
                             title: 'Student Attendance Page',
@@ -344,7 +346,9 @@ async function retriveClasses(token, callback) {
         .then(function (response) {
             console.log('here')
             console.log(response.data);
-            var data = JSON.stringify(response.data)
+            var data = response.data
+//            var data = JSON.stringify(response.data)
+//            console.log('data: ', data)
             var teachers_courses = data.teachers_courses
             var student_courses = data.student_courses
             if (teachers_courses.length == 0) {
@@ -353,13 +357,13 @@ async function retriveClasses(token, callback) {
                 courses = teachers_courses;
             }
             console.log('courses: ', courses)
+            callback(JSON.stringify(courses));
         })
         .catch(function (error) {
             console.log('___________________________________________________________retriveClasses_ERROR')
             console.log('error: ', error);
         });
 // console.log(courses)
-    callback(JSON.stringify(courses));
 }
 async function getUserName(token, callback) {
     await axios.get('http://localhost/moodle/api/v1/user/details.php', {
