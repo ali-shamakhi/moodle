@@ -327,6 +327,10 @@
                     "type": "string",
                     "example": "Unknown Error"
                 },
+                "pic_url": {
+                    "description": "First Teacher's picture URL",
+                    "type": "string"
+                },
                 "teachers_courses": {
                     "description": "",
                     "type": "array",
