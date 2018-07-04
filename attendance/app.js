@@ -212,7 +212,6 @@ app.post('/mediator', function (req, res) {
         console.log('Timer is complete');
     });
 
-
     var token = req.cookies.attendance;
     var url = 'http://localhost/moodle/api/v1/course/details.php';
     // var url = 'https://jsonplaceholder.typicode.com/users';

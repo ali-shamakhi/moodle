@@ -67,36 +67,35 @@
                 });
                 return false;
             });
-            var classes =
-                socket.on('attendance', function (data) {
-                    $(`#${data.name}`)
-                    if (data.name.indexOf("PROF") > -1) {
-                        $('#coursesList').append(
-                            $('<div>').on('click', setSelectedCard($(this))).addClass( //.on("click", removeCard)
-                                'col-lg-4 col-md-6 col-sm-12 ltr').attr({
-                                "id": data.name,
-                                "data-toggle": "modal",
-                                "data-target": "#classAttendancy"
-                            }).append(
-                                $('<div>').addClass("card-img").append(
-                                    $('<div>').addClass("wrapper-img-blue").append(
-                                        $('<div>').addClass("content-img col-md-7").append(
-                                            $('<h5>').addClass("card-title").text(data.name.substring(4)),
-                                            $('<h6>').addClass("card-title").text(data.prof),
-                                            $('<h6>').addClass("card-title").text(data.absence +
-                                                ' غیبت')
-                                        ),
-                                        $('<div>').addClass("text-center col-md-5").append(
-                                            $('<img>', {
-                                                src: 'img/500x500.png'
-                                            }).addClass('responsive-img')
-                                        )
+            socket.on('attendance', function (data) {
+                $(`#${data.name}`)
+                if (data.name.indexOf("PROF") > -1) {
+                    $('#coursesList').append(
+                        $('<div>').on('click', setSelectedCard($(this))).addClass( //.on("click", removeCard)
+                            'col-lg-4 col-md-6 col-sm-12 ltr').attr({
+                            "id": data.name,
+                            "data-toggle": "modal",
+                            "data-target": "#classAttendancy"
+                        }).append(
+                            $('<div>').addClass("card-img").append(
+                                $('<div>').addClass("wrapper-img-blue").append(
+                                    $('<div>').addClass("content-img col-md-7").append(
+                                        $('<h5>').addClass("card-title").text(data.name.substring(4)),
+                                        $('<h6>').addClass("card-title").text(data.prof),
+                                        $('<h6>').addClass("card-title").text(data.absence +
+                                            ' غیبت')
+                                    ),
+                                    $('<div>').addClass("text-center col-md-5").append(
+                                        $('<img>', {
+                                            src: 'img/500x500.png'
+                                        }).addClass('responsive-img')
                                     )
                                 )
                             )
-                        );
-                    }
-                });
+                        )
+                    );
+                }
+            });
         });
     </script>
 </head>
@@ -146,7 +145,7 @@
                                     <h5 class="card-title">
                                         <%= courses[i].course_name %>
                                     </h5>
-                                    <h6 class="card-title">
+                                    <h6 class="card-title">استاد:
                                         <%= courses[i].teachers_full_names[0] %>
                                     </h6>
                                     <h6 class="card-title"> غیبت
